@@ -20,9 +20,19 @@ const app = express();
 // Security headers (XSS, clickjacking, MIME sniffing protection)
 app.use(helmet());
 
-// CORS — restrict to frontend origin
+// CORS — restrict to frontend origin(s)
+const allowedOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(',')
+  : ['http://localhost:5173'];
+
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error(`Origin ${origin} not allowed by CORS`));
+    }
+  },
   credentials: true
 }));
 
