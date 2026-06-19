@@ -7,12 +7,7 @@ backend/.env
 frontend/.env
 
 # Exclude package files as requested by user
-package.json
-package-lock.json
-backend/package.json
-backend/package-lock.json
-frontend/package.json
-frontend/package-lock.json
+
 
 # Exclude dependencies
 node_modules/
