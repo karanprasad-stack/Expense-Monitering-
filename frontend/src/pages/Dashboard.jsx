@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import api from '../utils/axios';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend } from 'recharts';
-import { Wallet, PiggyBank, TrendingDown, IndianRupee, AlertTriangle, ArrowRight, Pencil, Loader2, Calendar } from 'lucide-react';
+import { Wallet, PiggyBank, TrendingDown, IndianRupee, AlertTriangle, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const Dashboard = () => {
@@ -11,20 +11,6 @@ const Dashboard = () => {
   const [month, setMonth] = useState(currentDate.getMonth() + 1);
   const [year, setYear] = useState(currentDate.getFullYear());
   const [isTransactionsModalOpen, setIsTransactionsModalOpen] = useState(false);
-
-  // Edit Transaction Modal State
-  const [categories, setCategories] = useState([]);
-  const [editTxModal, setEditTxModal] = useState({
-    isOpen: false,
-    id: null,
-    amount: '',
-    description: '',
-    date: '',
-    categoryId: '',
-    subcategoryId: '',
-    paymentMethod: 'UPI'
-  });
-  const [isUpdatingTx, setIsUpdatingTx] = useState(false);
 
   const groupExpensesByDate = (expensesList) => {
     if (!expensesList) return {};
@@ -57,65 +43,6 @@ const Dashboard = () => {
       setData(null);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchCategoriesForEdit = async () => {
-    try {
-      const budgetRes = await api.get(`/budgets?month=${month}&year=${year}`);
-      if (budgetRes.data) {
-        const catRes = await api.get(`/categories?budgetId=${budgetRes.data._id}`);
-        setCategories(catRes.data || []);
-      }
-    } catch (error) {
-      console.error('Error fetching categories for edit:', error);
-    }
-  };
-
-  const handleOpenEditTx = async (exp) => {
-    await fetchCategoriesForEdit();
-
-    const catId = typeof exp.categoryId === 'object' && exp.categoryId !== null ? exp.categoryId._id : exp.categoryId;
-    const subId = typeof exp.subcategoryId === 'object' && exp.subcategoryId !== null ? exp.subcategoryId._id : exp.subcategoryId;
-
-    setEditTxModal({
-      isOpen: true,
-      id: exp._id,
-      amount: exp.amount.toString(),
-      description: exp.description === 'General' ? '' : exp.description,
-      date: new Date(exp.date).toISOString().split('T')[0],
-      categoryId: catId || '',
-      subcategoryId: subId || '',
-      paymentMethod: exp.paymentMethod || 'UPI'
-    });
-  };
-
-  const handleSaveEditTx = async (e) => {
-    e.preventDefault();
-    if (isUpdatingTx) return;
-
-    const parsedAmount = Number(editTxModal.amount);
-    if (isNaN(parsedAmount) || parsedAmount <= 0) {
-      return;
-    }
-
-    try {
-      setIsUpdatingTx(true);
-      await api.put(`/expenses/${editTxModal.id}`, {
-        amount: parsedAmount,
-        description: editTxModal.description.trim() || 'General',
-        date: editTxModal.date,
-        categoryId: editTxModal.categoryId,
-        subcategoryId: editTxModal.subcategoryId,
-        paymentMethod: editTxModal.paymentMethod
-      });
-
-      setEditTxModal({ isOpen: false, id: null, amount: '', description: '', date: '', categoryId: '', subcategoryId: '', paymentMethod: 'UPI' });
-      await fetchDashboardData();
-    } catch (error) {
-      console.error('Update transaction error in dashboard:', error);
-    } finally {
-      setIsUpdatingTx(false);
     }
   };
 
@@ -385,15 +312,8 @@ const Dashboard = () => {
                               </span>
                             </div>
                           </div>
-                          <div className="flex items-center space-x-3 pl-4">
+                          <div className="pl-4">
                             <p className="font-extrabold text-red-600 text-sm whitespace-nowrap">- ₹{exp.amount}</p>
-                            <button
-                              onClick={() => handleOpenEditTx(exp)}
-                              className="p-1.5 rounded-lg border border-gray-200 text-gray-400 hover:text-indigo-600 hover:bg-white hover:border-indigo-200 transition-all font-semibold"
-                              title="Edit Transaction"
-                            >
-                              <Pencil className="h-3.5 w-3.5" />
-                            </button>
                           </div>
                         </div>
                       ))}
@@ -407,148 +327,6 @@ const Dashboard = () => {
                 </div>
               )}
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* Edit Transaction Modal */}
-      {editTxModal.isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/55 backdrop-blur-sm transition-opacity">
-          <div className="bg-white rounded-3xl p-6 max-w-lg w-full shadow-2xl border border-gray-100 transform scale-100 transition-all duration-200">
-            <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
-              <div className="flex items-center space-x-2">
-                <Pencil className="h-5 w-5 text-indigo-600" />
-                <h4 className="text-lg font-bold text-gray-900">Edit Transaction</h4>
-              </div>
-              <button
-                onClick={() => setEditTxModal({ isOpen: false, id: null, amount: '', description: '', date: '', categoryId: '', subcategoryId: '', paymentMethod: 'UPI' })}
-                className="text-gray-400 hover:text-gray-600 font-bold text-sm p-1"
-              >
-                ✕
-              </button>
-            </div>
-
-            <form onSubmit={handleSaveEditTx} className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Date</label>
-                  <input
-                    type="date"
-                    required
-                    disabled={isUpdatingTx}
-                    className="w-full px-3.5 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    value={editTxModal.date}
-                    onChange={(e) => setEditTxModal({ ...editTxModal, date: e.target.value })}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Amount (₹)</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    min="0.01"
-                    required
-                    disabled={isUpdatingTx}
-                    className="w-full px-3.5 py-2 rounded-xl border border-gray-200 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    value={editTxModal.amount}
-                    onChange={(e) => setEditTxModal({ ...editTxModal, amount: e.target.value })}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Category</label>
-                  <select
-                    required
-                    disabled={isUpdatingTx}
-                    className="w-full px-3.5 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
-                    value={editTxModal.categoryId}
-                    onChange={(e) => {
-                      setEditTxModal({
-                        ...editTxModal,
-                        categoryId: e.target.value,
-                        subcategoryId: ''
-                      });
-                    }}
-                  >
-                    <option value="" disabled>Select Category</option>
-                    {categories.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Subcategory</label>
-                  <select
-                    required
-                    disabled={!editTxModal.categoryId || isUpdatingTx}
-                    className="w-full px-3.5 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
-                    value={editTxModal.subcategoryId}
-                    onChange={(e) => setEditTxModal({ ...editTxModal, subcategoryId: e.target.value })}
-                  >
-                    <option value="" disabled>Select Subcategory</option>
-                    {categories.find(c => c._id === editTxModal.categoryId)?.subcategories?.map(s => (
-                      <option key={s._id} value={s._id}>{s.name}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Payment Method</label>
-                <select
-                  disabled={isUpdatingTx}
-                  className="w-full px-3.5 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
-                  value={editTxModal.paymentMethod}
-                  onChange={(e) => setEditTxModal({ ...editTxModal, paymentMethod: e.target.value })}
-                >
-                  <option value="UPI">UPI / GPay / PhonePe</option>
-                  <option value="Credit Card">Credit Card</option>
-                  <option value="Debit Card">Debit Card</option>
-                  <option value="Net Banking">Net Banking</option>
-                  <option value="Cash">Cash</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Note / Description</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Groceries"
-                  disabled={isUpdatingTx}
-                  className="w-full px-3.5 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  value={editTxModal.description}
-                  onChange={(e) => setEditTxModal({ ...editTxModal, description: e.target.value })}
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setEditTxModal({ isOpen: false, id: null, amount: '', description: '', date: '', categoryId: '', subcategoryId: '', paymentMethod: 'UPI' })}
-                  disabled={isUpdatingTx}
-                  className="w-full py-2.5 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 text-sm font-semibold transition-all"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isUpdatingTx}
-                  className="w-full py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 text-sm font-semibold transition-all shadow-md shadow-indigo-200 flex items-center justify-center space-x-2"
-                >
-                  {isUpdatingTx ? (
-                    <>
-                      <Loader2 className="animate-spin h-4 w-4" />
-                      <span>Saving...</span>
-                    </>
-                  ) : (
-                    <span>Save Changes</span>
-                  )}
-                </button>
-              </div>
-            </form>
           </div>
         </div>
       )}
