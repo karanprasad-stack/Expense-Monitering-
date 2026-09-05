@@ -88,6 +88,10 @@ const getDashboardSummary = async (req, res) => {
         description: exp.description,
         amount: exp.amount,
         date: exp.date,
+        categoryId: exp.categoryId,
+        subcategoryId: exp.subcategoryId,
+        paymentMethod: exp.paymentMethod,
+        isRecurring: exp.isRecurring,
         categoryName: cat ? cat.name : 'Unknown',
         subcategoryName: sub ? sub.name : 'Unknown'
       };
@@ -102,6 +106,10 @@ const getDashboardSummary = async (req, res) => {
         description: exp.description,
         amount: exp.amount,
         date: exp.date,
+        categoryId: exp.categoryId,
+        subcategoryId: exp.subcategoryId,
+        paymentMethod: exp.paymentMethod,
+        isRecurring: exp.isRecurring,
         categoryName: cat ? cat.name : 'Unknown',
         subcategoryName: sub ? sub.name : 'Unknown'
       };

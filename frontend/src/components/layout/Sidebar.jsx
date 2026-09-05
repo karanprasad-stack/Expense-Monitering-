@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, PieChart, Receipt, LogOut } from 'lucide-react';
+import { LayoutDashboard, PieChart, Receipt, Handshake, LogOut } from 'lucide-react';
 import { AuthContext } from '../../context/AuthContext';
 import clsx from 'clsx';
 
@@ -12,6 +12,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
     { name: 'Dashboard', path: '/', icon: LayoutDashboard },
     { name: 'Transactions', path: '/transactions', icon: Receipt },
     { name: 'Budget Planning', path: '/planning', icon: PieChart },
+    { name: 'Lending & Borrowing', path: '/udhar', icon: Handshake },
   ];
 
   const handleItemClick = () => {

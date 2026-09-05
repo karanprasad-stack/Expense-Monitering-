@@ -20,18 +20,24 @@ const app = express();
 // Security headers (XSS, clickjacking, MIME sniffing protection)
 app.use(helmet());
 
-// CORS — restrict to frontend origin(s)
+// CORS — restrict to frontend origin(s) or local network in development
 const allowedOrigins = process.env.CORS_ORIGIN
-  ? process.env.CORS_ORIGIN.split(',')
+  ? process.env.CORS_ORIGIN.split(',').map(o => o.trim())
   : ['http://localhost:5173'];
 
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error(`Origin ${origin} not allowed by CORS`));
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) !== -1) return callback(null, true);
+
+    // Allow localhost, 127.0.0.1, and private LAN ranges (192.168.x, 10.x, 172.16-31.x) in development
+    if (process.env.NODE_ENV !== 'production') {
+      const isLocalOrLan = /^http:\/\/(localhost|127\.0\.0\.1|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2[0-9]|3[0-1])\.\d+\.\d+)(:\d+)?$/.test(origin);
+      if (isLocalOrLan) {
+        return callback(null, true);
+      }
     }
+    callback(new Error(`Origin ${origin} not allowed by CORS`));
   },
   credentials: true
 }));
@@ -52,10 +58,10 @@ const globalLimiter = rateLimit({
 });
 app.use('/api', globalLimiter);
 
-// Strict rate limiter for auth routes — 10 attempts per 15 minutes
+// Strict rate limiter for auth routes — 100 attempts per 15 minutes in dev/test, 10 in prod
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 10,
+  max: process.env.NODE_ENV === 'production' ? 10 : 100,
   message: { message: 'Too many login attempts, please try again after 15 minutes.' },
   standardHeaders: true,
   legacyHeaders: false,
@@ -72,6 +78,7 @@ const budgetRoutes = require('./routes/budgetRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
 const expenseRoutes = require('./routes/expenseRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
+const udharRoutes = require('./routes/udharRoutes');
 
 // Mount routes
 app.use('/api/auth', authLimiter, authRoutes);
@@ -79,6 +86,7 @@ app.use('/api/budgets', budgetRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/expenses', expenseRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/udhar', udharRoutes);
 
 app.get('/', (req, res) => {
   res.send('Budget API is running');
@@ -95,6 +103,6 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
 });

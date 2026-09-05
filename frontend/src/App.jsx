@@ -8,6 +8,7 @@ import Layout from './components/layout/Layout';
 
 import BudgetPlanning from './pages/BudgetPlanning';
 import Transactions from './pages/Transactions';
+import LendingBorrowing from './pages/LendingBorrowing';
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useContext(AuthContext);
@@ -25,6 +26,7 @@ function App() {
         <Route path="/" element={<ProtectedRoute><Layout><Dashboard /></Layout></ProtectedRoute>} />
         <Route path="/planning" element={<ProtectedRoute><Layout><BudgetPlanning /></Layout></ProtectedRoute>} />
         <Route path="/transactions" element={<ProtectedRoute><Layout><Transactions /></Layout></ProtectedRoute>} />
+        <Route path="/udhar" element={<ProtectedRoute><Layout><LendingBorrowing /></Layout></ProtectedRoute>} />
       </Routes>
     </Router>
   );
