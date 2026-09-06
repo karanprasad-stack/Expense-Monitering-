@@ -290,15 +290,15 @@ const LendingBorrowing = () => {
         <div
           className={`p-4 rounded-2xl flex items-center justify-between shadow-sm transition-all duration-300 ${
             alert.type === 'error'
-              ? 'bg-red-50 border border-red-200 text-red-700'
-              : 'bg-emerald-50 border border-emerald-200 text-emerald-800'
+              ? 'bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/60 text-red-700 dark:text-red-300'
+              : 'bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/60 text-emerald-800 dark:text-emerald-300'
           }`}
         >
           <div className="flex items-center space-x-2">
             {alert.type === 'error' ? <AlertTriangle className="h-5 w-5" /> : <CheckCircle2 className="h-5 w-5" />}
             <span className="text-sm font-semibold">{alert.message}</span>
           </div>
-          <button onClick={() => setAlert({ type: '', message: '' })} className="p-1 hover:bg-black/5 rounded-lg">
+          <button onClick={() => setAlert({ type: '', message: '' })} className="p-1 hover:bg-black/5 dark:hover:bg-white/10 rounded-lg cursor-pointer">
             <X className="h-4 w-4" />
           </button>
         </div>
@@ -308,12 +308,12 @@ const LendingBorrowing = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center space-x-3">
-            <div className="p-2.5 bg-indigo-50 text-indigo-600 rounded-2xl border border-indigo-100 shadow-xs">
+            <div className="p-2.5 bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 rounded-2xl border border-indigo-100 dark:border-indigo-900/50 shadow-xs">
               <Handshake className="h-6 w-6" />
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">Lending & Borrowing</h2>
-              <p className="text-xs text-gray-500 mt-0.5">Manage Udhar, track money lent to others and borrowed from others</p>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Lending & Borrowing</h2>
+              <p className="text-xs text-gray-500 dark:text-slate-400 mt-0.5">Manage Udhar, track money lent to others and borrowed from others</p>
             </div>
           </div>
         </div>
@@ -321,9 +321,9 @@ const LendingBorrowing = () => {
         <div className="flex items-center space-x-3">
           <button
             onClick={handleOpenAddPerson}
-            className="px-4 py-2.5 bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 rounded-xl text-xs font-bold transition-all shadow-xs flex items-center space-x-1.5 cursor-pointer"
+            className="px-4 py-2.5 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-700 rounded-xl text-xs font-bold transition-all shadow-xs flex items-center space-x-1.5 cursor-pointer"
           >
-            <UserPlus className="h-4 w-4 text-gray-600" />
+            <UserPlus className="h-4 w-4 text-gray-600 dark:text-slate-300" />
             <span>+ Add Person</span>
           </button>
 
@@ -340,73 +340,79 @@ const LendingBorrowing = () => {
       {/* Top 4 Summary Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         {/* Total to Receive */}
-        <div className="bg-white p-5 rounded-2xl border border-emerald-100 shadow-xs flex items-center justify-between">
+        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-emerald-100 dark:border-slate-800 shadow-xs flex items-center justify-between">
           <div>
-            <span className="text-xs font-bold text-emerald-700 uppercase tracking-wider block">Total to Receive</span>
-            <span className="text-2xl font-black text-emerald-600 mt-1 block">
+            <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider block">Total to Receive</span>
+            <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1 block">
               {formatCurrency(overview.totalToReceive)}
             </span>
-            <span className="text-[11px] text-gray-400 font-medium mt-0.5 block">Money people owe you</span>
+            <span className="text-[11px] text-gray-400 dark:text-slate-400 font-medium mt-0.5 block">Money people owe you</span>
           </div>
-          <div className="p-3 bg-emerald-50 text-emerald-600 rounded-2xl">
+          <div className="p-3 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 rounded-2xl">
             <ArrowDownLeft className="h-6 w-6" />
           </div>
         </div>
 
         {/* Total to Pay */}
-        <div className="bg-white p-5 rounded-2xl border border-red-100 shadow-xs flex items-center justify-between">
+        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-red-100 dark:border-slate-800 shadow-xs flex items-center justify-between">
           <div>
-            <span className="text-xs font-bold text-red-700 uppercase tracking-wider block">Total to Pay</span>
-            <span className="text-2xl font-black text-red-600 mt-1 block">
+            <span className="text-xs font-bold text-red-700 dark:text-red-400 uppercase tracking-wider block">Total to Pay</span>
+            <span className="text-2xl font-black text-red-600 dark:text-red-400 mt-1 block">
               {formatCurrency(overview.totalToPay)}
             </span>
-            <span className="text-[11px] text-gray-400 font-medium mt-0.5 block">Money you owe others</span>
+            <span className="text-[11px] text-gray-400 dark:text-slate-400 font-medium mt-0.5 block">Money you owe others</span>
           </div>
-          <div className="p-3 bg-red-50 text-red-600 rounded-2xl">
+          <div className="p-3 bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400 rounded-2xl">
             <ArrowUpRight className="h-6 w-6" />
           </div>
         </div>
 
         {/* Net Balance */}
-        <div className="bg-white p-5 rounded-2xl border border-indigo-100 shadow-xs flex items-center justify-between">
+        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-indigo-100 dark:border-slate-800 shadow-xs flex items-center justify-between">
           <div>
-            <span className="text-xs font-bold text-indigo-700 uppercase tracking-wider block">Net Balance</span>
-            <span className={`text-2xl font-black mt-1 block ${overview.netBalance > 0 ? 'text-emerald-600' : overview.netBalance < 0 ? 'text-red-600' : 'text-gray-800'}`}>
+            <span className="text-xs font-bold text-indigo-700 dark:text-indigo-400 uppercase tracking-wider block">Net Balance</span>
+            <span className={`text-2xl font-black mt-1 block ${
+              overview.netBalance > 0 
+                ? 'text-emerald-600 dark:text-emerald-400' 
+                : overview.netBalance < 0 
+                ? 'text-red-600 dark:text-red-400' 
+                : 'text-gray-800 dark:text-slate-100'
+            }`}>
               {overview.netBalance >= 0 ? `+${formatCurrency(overview.netBalance)}` : `-${formatCurrency(overview.netBalance)}`}
             </span>
-            <span className="text-[11px] text-gray-400 font-medium mt-0.5 block">
+            <span className="text-[11px] text-gray-400 dark:text-slate-400 font-medium mt-0.5 block">
               {overview.netBalance > 0 ? 'Net in your favor' : overview.netBalance < 0 ? 'Net amount payable' : 'All balanced'}
             </span>
           </div>
-          <div className="p-3 bg-indigo-50 text-indigo-600 rounded-2xl">
+          <div className="p-3 bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 rounded-2xl">
             <Scale className="h-6 w-6" />
           </div>
         </div>
 
         {/* Total People */}
-        <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-xs flex items-center justify-between">
+        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-xs flex items-center justify-between">
           <div>
-            <span className="text-xs font-bold text-gray-500 uppercase tracking-wider block">People</span>
-            <span className="text-2xl font-black text-gray-900 mt-1 block">{overview.peopleCount}</span>
-            <span className="text-[11px] text-gray-400 font-medium mt-0.5 block">Active lending contacts</span>
+            <span className="text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider block">People</span>
+            <span className="text-2xl font-black text-gray-900 dark:text-slate-100 mt-1 block">{overview.peopleCount}</span>
+            <span className="text-[11px] text-gray-400 dark:text-slate-400 font-medium mt-0.5 block">Active lending contacts</span>
           </div>
-          <div className="p-3 bg-gray-50 text-gray-600 rounded-2xl">
+          <div className="p-3 bg-gray-50 dark:bg-slate-800 text-gray-600 dark:text-slate-400 rounded-2xl">
             <Users className="h-6 w-6" />
           </div>
         </div>
       </div>
 
       {/* Search & Filter Bar */}
-      <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+      <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
         {/* Search */}
         <div className="relative flex-1">
-          <Search className="h-4 w-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+          <Search className="h-4 w-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-400" />
           <input
             type="text"
             placeholder="Search by name or phone number..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-gray-50/50"
+            className="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-gray-50/50 dark:bg-slate-800 text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500"
           />
         </div>
 
@@ -424,7 +430,7 @@ const LendingBorrowing = () => {
               className={`px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
                 statusFilter === f.id
                   ? 'bg-indigo-600 text-white shadow-xs'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200/80'
+                  : 'bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-300 hover:bg-gray-200/80 dark:hover:bg-slate-700'
               }`}
             >
               {f.label}
@@ -435,8 +441,8 @@ const LendingBorrowing = () => {
 
       {/* People Grid View */}
       {loading ? (
-        <div className="py-20 flex flex-col items-center justify-center text-gray-400">
-          <Loader2 className="animate-spin h-8 w-8 text-indigo-600 mb-2" />
+        <div className="py-20 flex flex-col items-center justify-center text-gray-400 dark:text-slate-400">
+          <Loader2 className="animate-spin h-8 w-8 text-indigo-600 dark:text-indigo-400 mb-2" />
           <span className="text-sm font-medium">Loading Lending & Borrowing records...</span>
         </div>
       ) : people.length > 0 ? (
@@ -450,26 +456,26 @@ const LendingBorrowing = () => {
               <div
                 key={p._id}
                 onClick={() => fetchPersonHistory(p._id)}
-                className="p-5 bg-white rounded-2xl border border-gray-100 hover:border-indigo-300 shadow-xs hover:shadow-md transition-all flex flex-col justify-between cursor-pointer group"
+                className="p-5 bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-700 shadow-xs hover:shadow-md transition-all flex flex-col justify-between cursor-pointer group"
               >
                 <div>
                   {/* Top Row: Avatar, Name & Card Actions */}
                   <div className="flex items-start justify-between">
                     <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 rounded-2xl bg-indigo-50 text-indigo-700 font-bold flex items-center justify-center text-sm shadow-xs border border-indigo-100">
+                      <div className="w-10 h-10 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-bold flex items-center justify-center text-sm shadow-xs border border-indigo-100 dark:border-indigo-900/50">
                         {p.name.charAt(0).toUpperCase()}
                       </div>
                       <div className="min-w-0">
-                        <h4 className="font-bold text-gray-900 text-base truncate max-w-[150px]" title={p.name}>
+                        <h4 className="font-bold text-gray-900 dark:text-slate-100 text-base truncate max-w-[150px]" title={p.name}>
                           {p.name}
                         </h4>
                         {p.phone ? (
-                          <div className="flex items-center space-x-1 text-xs text-gray-400 mt-0.5">
+                          <div className="flex items-center space-x-1 text-xs text-gray-400 dark:text-slate-400 mt-0.5">
                             <Phone className="h-3 w-3" />
                             <span>{p.phone}</span>
                           </div>
                         ) : (
-                          <span className="text-[11px] text-gray-400 block mt-0.5">No phone added</span>
+                          <span className="text-[11px] text-gray-400 dark:text-slate-400 block mt-0.5">No phone added</span>
                         )}
                       </div>
                     </div>
@@ -478,14 +484,14 @@ const LendingBorrowing = () => {
                     <div className="flex items-center space-x-1" onClick={(e) => e.stopPropagation()}>
                       <button
                         onClick={(e) => handleOpenEditPerson(p, e)}
-                        className="p-1.5 rounded-lg border border-gray-200 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 hover:border-indigo-200 transition-colors"
+                        className="p-1.5 rounded-lg border border-gray-200 dark:border-slate-700 text-gray-400 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 hover:border-indigo-200 transition-colors cursor-pointer"
                         title="Edit Person"
                       >
                         <Pencil className="h-3.5 w-3.5" />
                       </button>
                       <button
                         onClick={(e) => handleDeletePersonClick(p, e)}
-                        className="p-1.5 rounded-lg border border-gray-200 text-gray-400 hover:text-red-600 hover:bg-red-50 hover:border-red-200 transition-colors"
+                        className="p-1.5 rounded-lg border border-gray-200 dark:border-slate-700 text-gray-400 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/50 hover:border-red-200 transition-colors cursor-pointer"
                         title="Delete Person"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
@@ -495,7 +501,7 @@ const LendingBorrowing = () => {
 
                   {/* Note if present */}
                   {p.note && (
-                    <p className="text-xs text-gray-500 italic mt-2.5 bg-gray-50 p-2 rounded-xl border border-gray-100">
+                    <p className="text-xs text-gray-500 dark:text-slate-400 italic mt-2.5 bg-gray-50 dark:bg-slate-800 p-2 rounded-xl border border-gray-100 dark:border-slate-700">
                       "{p.note}"
                     </p>
                   )}
@@ -504,10 +510,10 @@ const LendingBorrowing = () => {
                   <div
                     className={`mt-4 p-3.5 rounded-xl border flex items-center justify-between ${
                       isTheyOwe
-                        ? 'bg-emerald-50/70 border-emerald-200/80 text-emerald-900'
+                        ? 'bg-emerald-50/70 dark:bg-emerald-950/30 border-emerald-200/80 dark:border-emerald-900/50 text-emerald-900 dark:text-emerald-300'
                         : isYouOwe
-                        ? 'bg-red-50/70 border-red-200/80 text-red-900'
-                        : 'bg-gray-50 border-gray-200/80 text-gray-700'
+                        ? 'bg-red-50/70 dark:bg-red-950/30 border-red-200/80 dark:border-red-900/50 text-red-900 dark:text-red-300'
+                        : 'bg-gray-50 dark:bg-slate-800 border-gray-200/80 dark:border-slate-700 text-gray-700 dark:text-slate-300'
                     }`}
                   >
                     <div>
@@ -516,7 +522,7 @@ const LendingBorrowing = () => {
                       </span>
                       <span
                         className={`text-lg font-black mt-0.5 block ${
-                          isTheyOwe ? 'text-emerald-700' : isYouOwe ? 'text-red-700' : 'text-gray-700'
+                          isTheyOwe ? 'text-emerald-700 dark:text-emerald-400' : isYouOwe ? 'text-red-700 dark:text-red-400' : 'text-gray-700 dark:text-slate-200'
                         }`}
                       >
                         {isSettled ? 'Settled (₹0)' : formatCurrency(p.netBalance)}
@@ -529,7 +535,7 @@ const LendingBorrowing = () => {
                           ? 'bg-emerald-600 text-white'
                           : isYouOwe
                           ? 'bg-red-600 text-white'
-                          : 'bg-gray-200 text-gray-700'
+                          : 'bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-slate-200'
                       }`}
                     >
                       {isTheyOwe ? 'They Owe' : isYouOwe ? 'You Owe' : 'Settled'}
@@ -538,29 +544,29 @@ const LendingBorrowing = () => {
 
                   {/* Given vs Received breakdown */}
                   <div className="grid grid-cols-2 gap-2 mt-3 text-xs">
-                    <div className="p-2 bg-gray-50 rounded-xl border border-gray-100">
-                      <span className="text-[10px] text-gray-400 block font-medium">You Gave / Lent</span>
-                      <span className="font-bold text-gray-800 mt-0.5 block">{formatCurrency(p.totalGiven)}</span>
+                    <div className="p-2 bg-gray-50 dark:bg-slate-800 rounded-xl border border-gray-100 dark:border-slate-700">
+                      <span className="text-[10px] text-gray-400 dark:text-slate-400 block font-medium">You Gave / Lent</span>
+                      <span className="font-bold text-gray-800 dark:text-slate-100 mt-0.5 block">{formatCurrency(p.totalGiven)}</span>
                     </div>
-                    <div className="p-2 bg-gray-50 rounded-xl border border-gray-100">
-                      <span className="text-[10px] text-gray-400 block font-medium">You Received</span>
-                      <span className="font-bold text-gray-800 mt-0.5 block">{formatCurrency(p.totalReceived)}</span>
+                    <div className="p-2 bg-gray-50 dark:bg-slate-800 rounded-xl border border-gray-100 dark:border-slate-700">
+                      <span className="text-[10px] text-gray-400 dark:text-slate-400 block font-medium">You Received</span>
+                      <span className="font-bold text-gray-800 dark:text-slate-100 mt-0.5 block">{formatCurrency(p.totalReceived)}</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Card Footer Actions */}
-                <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between gap-2" onClick={(e) => e.stopPropagation()}>
+                <div className="mt-4 pt-3 border-t border-gray-100 dark:border-slate-800 flex items-center justify-between gap-2" onClick={(e) => e.stopPropagation()}>
                   <button
                     onClick={() => fetchPersonHistory(p._id)}
-                    className="flex-1 py-1.5 px-2.5 rounded-xl border border-indigo-200 text-indigo-600 hover:bg-indigo-50 text-xs font-bold transition-all text-center"
+                    className="flex-1 py-1.5 px-2.5 rounded-xl border border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 text-xs font-bold transition-all text-center cursor-pointer"
                   >
                     View History ({p.transactionCount})
                   </button>
 
                   <button
                     onClick={(e) => handleOpenAddTx(p._id, 'GAVE', e)}
-                    className="py-1.5 px-3 bg-brand-500 hover:bg-brand-600 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center space-x-1"
+                    className="py-1.5 px-3 bg-brand-500 hover:bg-brand-600 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center space-x-1 cursor-pointer"
                   >
                     <PlusCircle className="h-3.5 w-3.5" />
                     <span>Record Udhar</span>
@@ -571,15 +577,15 @@ const LendingBorrowing = () => {
           })}
         </div>
       ) : (
-        <div className="p-12 bg-white rounded-3xl border border-dashed border-gray-200 text-center flex flex-col items-center justify-center">
-          <Handshake className="h-12 w-12 text-gray-300 mb-3" />
-          <h3 className="text-base font-bold text-gray-800">No Lending & Borrowing Records Found</h3>
-          <p className="text-xs text-gray-500 mt-1 max-w-md">
+        <div className="p-12 bg-white dark:bg-slate-900 rounded-3xl border border-dashed border-gray-200 dark:border-slate-800 text-center flex flex-col items-center justify-center">
+          <Handshake className="h-12 w-12 text-gray-300 dark:text-slate-600 mb-3" />
+          <h3 className="text-base font-bold text-gray-800 dark:text-slate-100">No Lending & Borrowing Records Found</h3>
+          <p className="text-xs text-gray-500 dark:text-slate-400 mt-1 max-w-md">
             {searchQuery ? 'No people match your search.' : 'Start tracking money you give to or borrow from friends, family, and colleagues.'}
           </p>
           <button
             onClick={handleOpenAddPerson}
-            className="mt-4 px-4 py-2 bg-brand-500 hover:bg-brand-600 text-white rounded-xl text-xs font-bold transition-all shadow-sm flex items-center space-x-1.5"
+            className="mt-4 px-4 py-2 bg-brand-500 hover:bg-brand-600 text-white rounded-xl text-xs font-bold transition-all shadow-sm flex items-center space-x-1.5 cursor-pointer"
           >
             <UserPlus className="h-4 w-4" />
             <span>+ Add Your First Person</span>
@@ -589,20 +595,20 @@ const LendingBorrowing = () => {
 
       {/* Person Detailed History Modal */}
       {activePersonHistory && historyData.person && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/55 backdrop-blur-sm transition-opacity">
-          <div className="bg-white rounded-3xl max-w-3xl w-full max-h-[85vh] flex flex-col shadow-2xl border border-gray-100 animate-fadeIn">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/80 backdrop-blur-sm transition-opacity">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-3xl w-full max-h-[85vh] flex flex-col shadow-2xl border border-gray-100 dark:border-slate-800 animate-fadeIn">
             {/* Modal Header */}
-            <div className="p-6 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="p-6 border-b border-gray-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <div className="flex items-center space-x-2.5">
-                  <h3 className="text-xl font-black text-gray-900">{historyData.person.name} — Udhar History</h3>
+                  <h3 className="text-xl font-black text-gray-900 dark:text-slate-100">{historyData.person.name} — Udhar History</h3>
                   <span
                     className={`text-xs font-bold px-2.5 py-0.5 rounded-full ${
                       historyData.person.status === 'THEY_OWE_YOU'
-                        ? 'bg-emerald-100 text-emerald-800'
+                        ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300'
                         : historyData.person.status === 'YOU_OWE_THEM'
-                        ? 'bg-red-100 text-red-800'
-                        : 'bg-gray-100 text-gray-700'
+                        ? 'bg-red-100 dark:bg-red-950/60 text-red-800 dark:text-red-300'
+                        : 'bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300'
                     }`}
                   >
                     {historyData.person.status === 'THEY_OWE_YOU'
@@ -612,24 +618,24 @@ const LendingBorrowing = () => {
                       : 'Settled'}
                   </span>
                 </div>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">
                   {historyData.person.phone ? `Phone: ${historyData.person.phone} • ` : ''}
-                  Total Given: <span className="font-bold text-gray-800">{formatCurrency(historyData.person.totalGiven)}</span> •
-                  Total Received: <span className="font-bold text-gray-800">{formatCurrency(historyData.person.totalReceived)}</span>
+                  Total Given: <span className="font-bold text-gray-800 dark:text-slate-100">{formatCurrency(historyData.person.totalGiven)}</span> •
+                  Total Received: <span className="font-bold text-gray-800 dark:text-slate-100">{formatCurrency(historyData.person.totalReceived)}</span>
                 </p>
               </div>
 
               <div className="flex items-center space-x-2 self-end sm:self-auto">
                 <button
                   onClick={() => handleOpenAddTx(historyData.person._id)}
-                  className="px-3 py-1.5 bg-brand-500 hover:bg-brand-600 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center space-x-1"
+                  className="px-3 py-1.5 bg-brand-500 hover:bg-brand-600 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center space-x-1 cursor-pointer"
                 >
                   <PlusCircle className="h-3.5 w-3.5" />
                   <span>+ Add Transaction</span>
                 </button>
                 <button
                   onClick={() => setActivePersonHistory(null)}
-                  className="p-2 bg-gray-50 hover:bg-gray-100 text-gray-400 hover:text-gray-600 rounded-xl transition-all font-bold text-xs"
+                  className="p-2 bg-gray-50 dark:bg-slate-800 hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-400 dark:text-slate-400 hover:text-gray-600 dark:hover:text-slate-200 rounded-xl transition-all font-bold text-xs cursor-pointer"
                 >
                   ✕ Close
                 </button>
@@ -639,13 +645,13 @@ const LendingBorrowing = () => {
             {/* History Table / Ledger */}
             <div className="flex-1 overflow-y-auto p-6">
               {historyLoading ? (
-                <div className="py-16 flex items-center justify-center text-gray-400">
-                  <Loader2 className="animate-spin h-6 w-6 text-indigo-600 mr-2" />
+                <div className="py-16 flex items-center justify-center text-gray-400 dark:text-slate-400">
+                  <Loader2 className="animate-spin h-6 w-6 text-indigo-600 dark:text-indigo-400 mr-2" />
                   <span className="text-xs font-medium">Loading ledger records...</span>
                 </div>
               ) : historyData.transactions.length > 0 ? (
                 <div className="space-y-3">
-                  <div className="hidden md:grid grid-cols-12 gap-2 px-3 py-2 bg-gray-50 rounded-xl text-[11px] font-bold text-gray-500 uppercase tracking-wider">
+                  <div className="hidden md:grid grid-cols-12 gap-2 px-3 py-2 bg-gray-50 dark:bg-slate-800 rounded-xl text-[11px] font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider">
                     <span className="col-span-2">Date</span>
                     <span className="col-span-3">Type / Direction</span>
                     <span className="col-span-2 text-right">Amount</span>
@@ -658,11 +664,11 @@ const LendingBorrowing = () => {
                     return (
                       <div
                         key={tx._id}
-                        className="p-3.5 bg-gray-50/70 hover:bg-gray-100/60 rounded-xl border border-gray-100 transition-all flex flex-col md:grid md:grid-cols-12 md:items-center gap-2"
+                        className="p-3.5 bg-gray-50/70 dark:bg-slate-800/60 hover:bg-gray-100/60 dark:hover:bg-slate-800 rounded-xl border border-gray-100 dark:border-slate-700/60 transition-all flex flex-col md:grid md:grid-cols-12 md:items-center gap-2"
                       >
                         {/* Date */}
-                        <div className="md:col-span-2 flex items-center space-x-1.5 text-xs text-gray-600 font-medium">
-                          <Calendar className="h-3.5 w-3.5 text-gray-400" />
+                        <div className="md:col-span-2 flex items-center space-x-1.5 text-xs text-gray-600 dark:text-slate-300 font-medium">
+                          <Calendar className="h-3.5 w-3.5 text-gray-400 dark:text-slate-400" />
                           <span>{new Date(tx.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
                         </div>
 
@@ -671,8 +677,8 @@ const LendingBorrowing = () => {
                           <span
                             className={`inline-flex items-center space-x-1 px-2.5 py-1 rounded-lg text-xs font-bold ${
                               isGave
-                                ? 'bg-indigo-50 text-indigo-700 border border-indigo-200'
-                                : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800'
+                                : 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
                             }`}
                           >
                             {isGave ? <ArrowUpRight className="h-3.5 w-3.5" /> : <ArrowDownLeft className="h-3.5 w-3.5" />}
@@ -682,28 +688,28 @@ const LendingBorrowing = () => {
 
                         {/* Amount */}
                         <div className="md:col-span-2 md:text-right">
-                          <span className={`text-sm font-extrabold ${isGave ? 'text-indigo-700' : 'text-emerald-700'}`}>
+                          <span className={`text-sm font-extrabold ${isGave ? 'text-indigo-700 dark:text-indigo-400' : 'text-emerald-700 dark:text-emerald-400'}`}>
                             {formatCurrency(tx.amount)}
                           </span>
                         </div>
 
                         {/* Note */}
-                        <div className="md:col-span-3 text-xs text-gray-600 truncate" title={tx.description || '—'}>
-                          {tx.description ? <span>{tx.description}</span> : <span className="text-gray-400 italic">—</span>}
+                        <div className="md:col-span-3 text-xs text-gray-600 dark:text-slate-300 truncate" title={tx.description || '—'}>
+                          {tx.description ? <span>{tx.description}</span> : <span className="text-gray-400 dark:text-slate-500 italic">—</span>}
                         </div>
 
                         {/* Actions */}
-                        <div className="md:col-span-2 flex items-center justify-end space-x-1.5 pt-2 md:pt-0 border-t md:border-t-0 border-gray-200">
+                        <div className="md:col-span-2 flex items-center justify-end space-x-1.5 pt-2 md:pt-0 border-t md:border-t-0 border-gray-200 dark:border-slate-700">
                           <button
                             onClick={(e) => handleOpenEditTx(tx, e)}
-                            className="p-1.5 rounded-lg border border-gray-200 bg-white text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 hover:border-indigo-200 transition-colors"
+                            className="p-1.5 rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-400 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 hover:border-indigo-200 transition-colors cursor-pointer"
                             title="Edit Transaction"
                           >
                             <Pencil className="h-3.5 w-3.5" />
                           </button>
                           <button
                             onClick={(e) => handleDeleteTxClick(tx._id, e)}
-                            className="p-1.5 rounded-lg border border-gray-200 bg-white text-gray-400 hover:text-red-600 hover:bg-red-50 hover:border-red-200 transition-colors"
+                            className="p-1.5 rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-400 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/50 hover:border-red-200 transition-colors cursor-pointer"
                             title="Delete Transaction"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
@@ -714,10 +720,10 @@ const LendingBorrowing = () => {
                   })}
                 </div>
               ) : (
-                <div className="py-16 text-center text-gray-400">
-                  <Receipt className="h-10 w-10 mx-auto text-gray-300 mb-2" />
-                  <p className="text-sm font-semibold text-gray-700">No transactions recorded for this person</p>
-                  <p className="text-xs text-gray-400 mt-1">Use "+ Add Transaction" to record your first lending or borrowing entry.</p>
+                <div className="py-16 text-center text-gray-400 dark:text-slate-400">
+                  <Receipt className="h-10 w-10 mx-auto text-gray-300 dark:text-slate-600 mb-2" />
+                  <p className="text-sm font-semibold text-gray-700 dark:text-slate-300">No transactions recorded for this person</p>
+                  <p className="text-xs text-gray-400 dark:text-slate-400 mt-1">Use "+ Add Transaction" to record your first lending or borrowing entry.</p>
                 </div>
               )}
             </div>
@@ -727,16 +733,16 @@ const LendingBorrowing = () => {
 
       {/* Add / Edit Person Modal */}
       {isAddPersonOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/55 backdrop-blur-sm transition-opacity">
-          <div className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border border-gray-100 animate-fadeIn">
-            <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/80 backdrop-blur-sm transition-opacity">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 max-w-md w-full shadow-2xl border border-gray-100 dark:border-slate-800 animate-fadeIn">
+            <div className="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-slate-800">
               <div className="flex items-center space-x-2">
-                <UserPlus className="h-5 w-5 text-indigo-600" />
-                <h4 className="text-lg font-bold text-gray-900">{editingPerson ? 'Edit Person' : 'Add Person'}</h4>
+                <UserPlus className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                <h4 className="text-lg font-bold text-gray-900 dark:text-slate-100">{editingPerson ? 'Edit Person' : 'Add Person'}</h4>
               </div>
               <button
                 onClick={() => setIsAddPersonOpen(false)}
-                className="text-gray-400 hover:text-gray-600 font-bold text-sm p-1"
+                className="text-gray-400 dark:text-slate-400 hover:text-gray-600 dark:hover:text-slate-200 font-bold text-sm p-1 cursor-pointer"
               >
                 ✕
               </button>
@@ -744,7 +750,7 @@ const LendingBorrowing = () => {
 
             <form onSubmit={handleSavePerson} className="space-y-4 mt-4">
               <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
+                <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1">
                   Person Name <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -752,7 +758,7 @@ const LendingBorrowing = () => {
                   required
                   disabled={isSavingPerson}
                   placeholder="e.g. Rahul, Amit Sharma"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   value={personForm.name}
                   onChange={(e) => setPersonForm({ ...personForm, name: e.target.value })}
                   autoFocus
@@ -760,28 +766,28 @@ const LendingBorrowing = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
+                <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1">
                   Phone Number (Optional)
                 </label>
                 <input
                   type="text"
                   disabled={isSavingPerson}
                   placeholder="e.g. 98XXXXXXXX"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   value={personForm.phone}
                   onChange={(e) => setPersonForm({ ...personForm, phone: e.target.value })}
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
+                <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1">
                   Note / Relationship (Optional)
                 </label>
                 <input
                   type="text"
                   disabled={isSavingPerson}
                   placeholder="e.g. College Friend, Roommate"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   value={personForm.note}
                   onChange={(e) => setPersonForm({ ...personForm, note: e.target.value })}
                 />
@@ -791,14 +797,14 @@ const LendingBorrowing = () => {
                 <button
                   type="button"
                   onClick={() => setIsAddPersonOpen(false)}
-                  className="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-sm font-semibold transition-all"
+                  className="flex-1 py-2.5 bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-700 dark:text-slate-300 rounded-xl text-sm font-semibold transition-all cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSavingPerson}
-                  className="flex-1 py-2.5 bg-brand-500 hover:bg-brand-600 disabled:opacity-50 text-white rounded-xl text-sm font-bold transition-all shadow-sm flex items-center justify-center space-x-1.5"
+                  className="flex-1 py-2.5 bg-brand-500 hover:bg-brand-600 disabled:opacity-50 text-white rounded-xl text-sm font-bold transition-all shadow-sm flex items-center justify-center space-x-1.5 cursor-pointer"
                 >
                   {isSavingPerson ? (
                     <>
@@ -817,18 +823,18 @@ const LendingBorrowing = () => {
 
       {/* Add / Edit Transaction Modal */}
       {isAddTxOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/55 backdrop-blur-sm transition-opacity">
-          <div className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border border-gray-100 animate-fadeIn">
-            <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/80 backdrop-blur-sm transition-opacity">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 max-w-md w-full shadow-2xl border border-gray-100 dark:border-slate-800 animate-fadeIn">
+            <div className="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-slate-800">
               <div className="flex items-center space-x-2">
-                <Handshake className="h-5 w-5 text-indigo-600" />
-                <h4 className="text-lg font-bold text-gray-900">
+                <Handshake className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                <h4 className="text-lg font-bold text-gray-900 dark:text-slate-100">
                   {editingTx ? 'Edit Udhar Transaction' : 'Record Udhar Transaction'}
                 </h4>
               </div>
               <button
                 onClick={() => setIsAddTxOpen(false)}
-                className="text-gray-400 hover:text-gray-600 font-bold text-sm p-1"
+                className="text-gray-400 dark:text-slate-400 hover:text-gray-600 dark:hover:text-slate-200 font-bold text-sm p-1 cursor-pointer"
               >
                 ✕
               </button>
@@ -837,7 +843,7 @@ const LendingBorrowing = () => {
             <form onSubmit={handleSaveTx} className="space-y-4 mt-4">
               {/* Person Selector */}
               <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
+                <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1">
                   Person <span className="text-red-500">*</span>
                 </label>
                 <select
@@ -845,7 +851,7 @@ const LendingBorrowing = () => {
                   disabled={isSavingTx}
                   value={txForm.personId}
                   onChange={(e) => setTxForm({ ...txForm, personId: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 >
                   <option value="" disabled>Select a person</option>
                   {people.map(p => (
@@ -858,17 +864,17 @@ const LendingBorrowing = () => {
 
               {/* Direction Type Tabs */}
               <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
                   Transaction Direction <span className="text-red-500">*</span>
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
                     onClick={() => setTxForm({ ...txForm, type: 'GAVE' })}
-                    className={`py-2.5 px-3 rounded-xl text-xs font-bold border transition-all flex items-center justify-center space-x-1.5 ${
+                    className={`py-2.5 px-3 rounded-xl text-xs font-bold border transition-all flex items-center justify-center space-x-1.5 cursor-pointer ${
                       txForm.type === 'GAVE'
                         ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs'
-                        : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'
+                        : 'bg-gray-50 dark:bg-slate-800 text-gray-600 dark:text-slate-300 border-gray-200 dark:border-slate-700 hover:bg-gray-100 dark:hover:bg-slate-700'
                     }`}
                   >
                     <ArrowUpRight className="h-4 w-4" />
@@ -878,17 +884,17 @@ const LendingBorrowing = () => {
                   <button
                     type="button"
                     onClick={() => setTxForm({ ...txForm, type: 'RECEIVED' })}
-                    className={`py-2.5 px-3 rounded-xl text-xs font-bold border transition-all flex items-center justify-center space-x-1.5 ${
+                    className={`py-2.5 px-3 rounded-xl text-xs font-bold border transition-all flex items-center justify-center space-x-1.5 cursor-pointer ${
                       txForm.type === 'RECEIVED'
                         ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
-                        : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'
+                        : 'bg-gray-50 dark:bg-slate-800 text-gray-600 dark:text-slate-300 border-gray-200 dark:border-slate-700 hover:bg-gray-100 dark:hover:bg-slate-700'
                     }`}
                   >
                     <ArrowDownLeft className="h-4 w-4" />
                     <span>I Received Money</span>
                   </button>
                 </div>
-                <span className="text-[11px] text-gray-400 block mt-1">
+                <span className="text-[11px] text-gray-400 dark:text-slate-400 block mt-1">
                   {txForm.type === 'GAVE'
                     ? 'Use this when you lend money or pay back what you owed'
                     : 'Use this when you borrow money or receive repayment'}
@@ -898,7 +904,7 @@ const LendingBorrowing = () => {
               {/* Amount & Date */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
+                  <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1">
                     Amount (₹) <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -908,21 +914,21 @@ const LendingBorrowing = () => {
                     required
                     disabled={isSavingTx}
                     placeholder="e.g. 5000"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     value={txForm.amount}
                     onChange={(e) => setTxForm({ ...txForm, amount: e.target.value })}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
+                  <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1">
                     Date <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="date"
                     required
                     disabled={isSavingTx}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     value={txForm.date}
                     onChange={(e) => setTxForm({ ...txForm, date: e.target.value })}
                   />
@@ -931,14 +937,14 @@ const LendingBorrowing = () => {
 
               {/* Description / Note */}
               <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
+                <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1">
                   Note / Reason (Optional)
                 </label>
                 <input
                   type="text"
                   disabled={isSavingTx}
                   placeholder="e.g. Emergency loan, Partial repayment"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   value={txForm.description}
                   onChange={(e) => setTxForm({ ...txForm, description: e.target.value })}
                 />
@@ -948,7 +954,7 @@ const LendingBorrowing = () => {
                 <button
                   type="button"
                   onClick={() => setIsAddTxOpen(false)}
-                  className="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-sm font-semibold transition-all"
+                  className="flex-1 py-2.5 bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-700 dark:text-slate-300 rounded-xl text-sm font-semibold transition-all cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -974,29 +980,29 @@ const LendingBorrowing = () => {
 
       {/* Delete Confirmation Modal */}
       {deleteConfirm.isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/55 backdrop-blur-sm transition-opacity">
-          <div className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl border border-gray-100 animate-fadeIn">
-            <div className="flex items-center space-x-3 text-red-600 mb-3">
-              <div className="p-2.5 bg-red-50 rounded-2xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/80 backdrop-blur-sm transition-opacity">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 max-w-sm w-full shadow-2xl border border-gray-100 dark:border-slate-800 animate-fadeIn">
+            <div className="flex items-center space-x-3 text-red-600 dark:text-red-400 mb-3">
+              <div className="p-2.5 bg-red-50 dark:bg-red-950/60 rounded-2xl">
                 <AlertTriangle className="h-6 w-6" />
               </div>
-              <h4 className="text-lg font-bold text-gray-900">{deleteConfirm.title}</h4>
+              <h4 className="text-lg font-bold text-gray-900 dark:text-slate-100">{deleteConfirm.title}</h4>
             </div>
 
-            <p className="text-xs text-gray-600 leading-relaxed">{deleteConfirm.message}</p>
+            <p className="text-xs text-gray-600 dark:text-slate-300 leading-relaxed">{deleteConfirm.message}</p>
 
             <div className="flex space-x-3 mt-6">
               <button
                 type="button"
                 onClick={() => setDeleteConfirm({ isOpen: false, type: null, id: null, title: '', message: '' })}
-                className="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-bold transition-all"
+                className="flex-1 py-2.5 bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-700 dark:text-slate-300 rounded-xl text-xs font-bold transition-all cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={handleConfirmDelete}
-                className="flex-1 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm"
+                className="flex-1 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm cursor-pointer"
               >
                 Delete
               </button>

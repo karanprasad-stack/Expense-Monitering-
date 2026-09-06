@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import api from '../utils/axios';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import {
@@ -14,8 +14,10 @@ import {
   Layers,
   Sparkles
 } from 'lucide-react';
+import { ThemeContext } from '../context/ThemeContext';
 
 const BudgetPlanning = () => {
+  const { isDark } = useContext(ThemeContext);
   const [budget, setBudget] = useState(null);
   const [categories, setCategories] = useState([]);
   const [totalBudgetInput, setTotalBudgetInput] = useState('');
@@ -326,11 +328,9 @@ const BudgetPlanning = () => {
       console.error('Delete transaction error:', error);
       showError('Failed to delete transaction.');
     }
-  };
-
-  if (loading) {
+  };  if (loading) {
     return (
-      <div className="flex items-center justify-center h-[400px] text-gray-500 font-medium">
+      <div className="flex items-center justify-center h-[400px] text-gray-500 dark:text-slate-400 font-medium">
         <Loader2 className="animate-spin mr-2 h-6 w-6 text-brand-500" />
         <span>Loading Budget Planning...</span>
       </div>
@@ -341,10 +341,10 @@ const BudgetPlanning = () => {
     <div className="space-y-8 max-w-5xl mx-auto">
       {/* Error Message Alert */}
       {errorMessage && (
-        <div className="bg-red-50 border border-red-100 rounded-2xl p-4 flex items-center space-x-3 text-red-700 animate-pulse">
+        <div className="bg-red-50 dark:bg-red-950/40 border border-red-100 dark:border-red-900/60 rounded-2xl p-4 flex items-center space-x-3 text-red-700 dark:text-red-300 animate-pulse">
           <AlertCircle className="h-5 w-5 flex-shrink-0" />
           <span className="text-sm font-semibold">{errorMessage}</span>
-          <button onClick={() => setErrorMessage('')} className="ml-auto text-red-400 hover:text-red-600 font-bold text-xs">
+          <button onClick={() => setErrorMessage('')} className="ml-auto text-red-400 dark:text-red-400 hover:text-red-600 dark:hover:text-red-200 font-bold text-xs cursor-pointer">
             ✕
           </button>
         </div>
@@ -352,10 +352,10 @@ const BudgetPlanning = () => {
 
       {/* Success Message Alert */}
       {successMessage && (
-        <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-4 flex items-center space-x-3 text-emerald-800">
-          <CheckCircle2 className="h-5 w-5 flex-shrink-0 text-emerald-600" />
+        <div className="bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900/60 rounded-2xl p-4 flex items-center space-x-3 text-emerald-800 dark:text-emerald-300">
+          <CheckCircle2 className="h-5 w-5 flex-shrink-0 text-emerald-600 dark:text-emerald-400" />
           <span className="text-sm font-semibold">{successMessage}</span>
-          <button onClick={() => setSuccessMessage('')} className="ml-auto text-emerald-400 hover:text-emerald-600 font-bold text-xs">
+          <button onClick={() => setSuccessMessage('')} className="ml-auto text-emerald-400 dark:text-emerald-400 hover:text-emerald-600 dark:hover:text-emerald-200 font-bold text-xs cursor-pointer">
             ✕
           </button>
         </div>
@@ -364,16 +364,24 @@ const BudgetPlanning = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-gray-800">Budget Planning</h2>
-          <p className="text-sm text-gray-500">Allocate budgets to categories & monitor utilization</p>
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-slate-100">Budget Planning</h2>
+          <p className="text-sm text-gray-500 dark:text-slate-400">Allocate budgets to categories & monitor utilization</p>
         </div>
         <div className="flex space-x-3 sm:space-x-4">
-          <select value={month} onChange={(e) => setMonth(Number(e.target.value))} className="flex-1 sm:flex-initial px-4 py-2 rounded-xl border border-gray-200 bg-white font-medium text-sm">
+          <select 
+            value={month} 
+            onChange={(e) => setMonth(Number(e.target.value))} 
+            className="flex-1 sm:flex-initial px-4 py-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-800 dark:text-slate-100 font-medium text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+          >
             {Array.from({ length: 12 }, (_, i) => i + 1).map(m => (
               <option key={m} value={m}>{new Date(0, m - 1).toLocaleString('default', { month: 'long' })}</option>
             ))}
           </select>
-          <select value={year} onChange={(e) => setYear(Number(e.target.value))} className="flex-1 sm:flex-initial px-4 py-2 rounded-xl border border-gray-200 bg-white font-medium text-sm">
+          <select 
+            value={year} 
+            onChange={(e) => setYear(Number(e.target.value))} 
+            className="flex-1 sm:flex-initial px-4 py-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-800 dark:text-slate-100 font-medium text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+          >
             {[2024, 2025, 2026, 2027].map(y => (
               <option key={y} value={y}>{y}</option>
             ))}
@@ -382,21 +390,21 @@ const BudgetPlanning = () => {
       </div>
 
       {!budget ? (
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-          <h3 className="text-xl font-bold mb-4">Create Budget for this Month</h3>
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800">
+          <h3 className="text-xl font-bold text-gray-800 dark:text-slate-100 mb-4">Create Budget for this Month</h3>
           <form onSubmit={createBudget} className="flex flex-col sm:flex-row sm:items-end gap-3 sm:gap-4">
             <div className="flex-1 w-full">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Total Budget Amount (₹)</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Total Budget Amount (₹)</label>
               <input
                 type="number"
                 required
-                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500"
                 placeholder="e.g. 50000"
                 value={totalBudgetInput}
                 onChange={(e) => setTotalBudgetInput(e.target.value)}
               />
             </div>
-            <button type="submit" className="w-full sm:w-auto px-6 py-2.5 bg-brand-500 text-white rounded-xl shadow-md hover:bg-brand-600 transition-all font-semibold h-[44px]">
+            <button type="submit" className="w-full sm:w-auto px-6 py-2.5 bg-brand-500 text-white rounded-xl shadow-md hover:bg-brand-600 transition-all font-semibold h-[44px] cursor-pointer">
               Set Budget
             </button>
           </form>
@@ -405,33 +413,33 @@ const BudgetPlanning = () => {
         <div className="space-y-6">
           {/* Top Budget Metric Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-blue-100">
+            <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-blue-100 dark:border-slate-800">
               <div className="flex justify-between items-start">
                 <div className="flex-1">
-                  <p className="text-sm text-gray-500 font-semibold">Total Budget</p>
+                  <p className="text-sm text-gray-500 dark:text-slate-400 font-semibold">Total Budget</p>
                   {isEditingBudget ? (
                     <form onSubmit={handleUpdateBudget} className="mt-2 flex items-center space-x-2 w-full">
                       <input
                         type="number"
                         required
-                        className="w-full max-w-[120px] px-2 py-1 text-base rounded-lg border border-gray-200 focus:outline-none focus:border-brand-500"
+                        className="w-full max-w-[120px] px-2 py-1 text-base rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 focus:outline-none focus:border-brand-500"
                         value={editingBudgetAmount}
                         onChange={(e) => setEditingBudgetAmount(e.target.value)}
                         autoFocus
                       />
-                      <button type="submit" className="px-2.5 py-1 bg-brand-500 text-white rounded-lg hover:bg-brand-600 text-xs font-semibold transition-all">
+                      <button type="submit" className="px-2.5 py-1 bg-brand-500 text-white rounded-lg hover:bg-brand-600 text-xs font-semibold transition-all cursor-pointer">
                         Save
                       </button>
                       <button
                         type="button"
                         onClick={() => setIsEditingBudget(false)}
-                        className="px-2 py-1 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 text-xs font-semibold transition-all"
+                        className="px-2 py-1 bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-slate-200 rounded-lg hover:bg-gray-300 dark:hover:bg-slate-600 text-xs font-semibold transition-all cursor-pointer"
                       >
                         Cancel
                       </button>
                     </form>
                   ) : (
-                    <p className="text-2xl font-bold text-gray-900 mt-1">₹{budget.totalBudget.toLocaleString('en-IN')}</p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-slate-100 mt-1">₹{budget.totalBudget.toLocaleString('en-IN')}</p>
                   )}
                 </div>
                 {!isEditingBudget && (
@@ -440,7 +448,7 @@ const BudgetPlanning = () => {
                       setEditingBudgetAmount(budget.totalBudget);
                       setIsEditingBudget(true);
                     }}
-                    className="p-1.5 text-gray-400 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition-colors text-xs font-semibold flex items-center space-x-1"
+                    className="p-1.5 text-gray-400 dark:text-slate-400 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-brand-50 dark:hover:bg-slate-800 rounded-lg transition-colors text-xs font-semibold flex items-center space-x-1 cursor-pointer"
                     title="Edit Budget"
                   >
                     <Pencil className="h-3.5 w-3.5" />
@@ -449,29 +457,29 @@ const BudgetPlanning = () => {
                 )}
               </div>
             </div>
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-indigo-100">
-              <p className="text-sm text-gray-500 font-semibold">Allocated</p>
-              <p className="text-2xl font-bold text-indigo-900 mt-1">₹{budget.allocatedAmount.toLocaleString('en-IN')}</p>
+            <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-indigo-100 dark:border-slate-800">
+              <p className="text-sm text-gray-500 dark:text-slate-400 font-semibold">Allocated</p>
+              <p className="text-2xl font-bold text-indigo-900 dark:text-indigo-300 mt-1">₹{budget.allocatedAmount.toLocaleString('en-IN')}</p>
             </div>
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-green-100">
-              <p className="text-sm text-gray-500 font-semibold">Unallocated</p>
-              <p className="text-2xl font-bold text-emerald-900 mt-1">₹{budget.remainingAmount.toLocaleString('en-IN')}</p>
+            <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-green-100 dark:border-slate-800">
+              <p className="text-sm text-gray-500 dark:text-slate-400 font-semibold">Unallocated</p>
+              <p className="text-2xl font-bold text-emerald-900 dark:text-emerald-300 mt-1">₹{budget.remainingAmount.toLocaleString('en-IN')}</p>
             </div>
           </div>
 
           {/* Add Category Form */}
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-            <h3 className="text-lg font-bold text-gray-800 mb-4">Add Parent Category</h3>
+          <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800">
+            <h3 className="text-lg font-bold text-gray-800 dark:text-slate-100 mb-4">Add Parent Category</h3>
             <form onSubmit={createCategory} className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <input
                 type="text"
                 placeholder="e.g. Living Expenses, Personal, Investments"
                 required
-                className="w-full sm:flex-1 px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm"
+                className="w-full sm:flex-1 px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm"
                 value={newCatName}
                 onChange={(e) => setNewCatName(e.target.value)}
               />
-              <button type="submit" className="w-full sm:w-auto px-6 py-2.5 bg-brand-500 text-white rounded-xl shadow-md hover:bg-brand-600 transition-all font-semibold text-sm">
+              <button type="submit" className="w-full sm:w-auto px-6 py-2.5 bg-brand-500 text-white rounded-xl shadow-md hover:bg-brand-600 transition-all font-semibold text-sm cursor-pointer">
                 Add Category
               </button>
             </form>
@@ -479,12 +487,12 @@ const BudgetPlanning = () => {
 
           {/* Add Subcategory Form */}
           {categories.length > 0 && (
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-              <h3 className="text-lg font-bold text-gray-800 mb-4">Add Subcategory</h3>
+            <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800">
+              <h3 className="text-lg font-bold text-gray-800 dark:text-slate-100 mb-4">Add Subcategory</h3>
               <form onSubmit={createSubcategory} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
                 <select
                   required
-                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                   value={selectedCatId}
                   onChange={(e) => setSelectedCatId(e.target.value)}
                 >
@@ -494,7 +502,7 @@ const BudgetPlanning = () => {
                 <input
                   type="text"
                   placeholder="Name (e.g. Eggs, Groceries)"
-                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                   value={newSubcatName}
                   onChange={(e) => setNewSubcatName(e.target.value)}
                 />
@@ -502,11 +510,11 @@ const BudgetPlanning = () => {
                   type="number"
                   placeholder="Budget (₹)"
                   required
-                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                   value={newSubcatAmount}
                   onChange={(e) => setNewSubcatAmount(e.target.value)}
                 />
-                <button type="submit" className="w-full px-6 py-2.5 bg-brand-500 text-white rounded-xl shadow-md hover:bg-brand-600 transition-all font-semibold text-sm">
+                <button type="submit" className="w-full px-6 py-2.5 bg-brand-500 text-white rounded-xl shadow-md hover:bg-brand-600 transition-all font-semibold text-sm cursor-pointer">
                   Add Subcategory
                 </button>
               </form>
@@ -515,25 +523,25 @@ const BudgetPlanning = () => {
 
           {/* Subcategory Interactive Transactions Panel (When a subcategory is clicked in chart or card) */}
           {selectedSubcategory && (
-            <div className="bg-gradient-to-br from-indigo-50/70 via-white to-indigo-50/30 p-6 rounded-2xl shadow-md border-2 border-indigo-300 space-y-4 animate-fadeIn transition-all">
+            <div className="bg-gradient-to-br from-indigo-50/70 via-white to-indigo-50/30 dark:from-indigo-950/40 dark:via-slate-900 dark:to-indigo-950/20 p-6 rounded-2xl shadow-md border-2 border-indigo-300 dark:border-indigo-800 space-y-4 animate-fadeIn transition-all">
               {/* Header */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-indigo-100">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-indigo-100 dark:border-indigo-900/60">
                 <div>
                   <div className="flex items-center space-x-2">
                     <span className="text-xs bg-indigo-600 text-white font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
                       Filtered Subcategory
                     </span>
-                    <h3 className="text-xl font-bold text-gray-900">{selectedSubcategory.name}</h3>
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-slate-100">{selectedSubcategory.name}</h3>
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Parent Category: <span className="font-semibold text-gray-700">{selectedSubcategory.categoryName}</span> • Month: <span className="font-semibold text-gray-700">{new Date(0, month - 1).toLocaleString('default', { month: 'long' })} {year}</span>
+                  <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">
+                    Parent Category: <span className="font-semibold text-gray-700 dark:text-slate-200">{selectedSubcategory.categoryName}</span> • Month: <span className="font-semibold text-gray-700 dark:text-slate-200">{new Date(0, month - 1).toLocaleString('default', { month: 'long' })} {year}</span>
                   </p>
                 </div>
 
                 <div className="flex items-center space-x-2">
                   <button
                     onClick={() => setSelectedSubcategory(null)}
-                    className="px-3.5 py-1.5 bg-white border border-gray-200 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-xl text-xs font-bold transition-all shadow-xs flex items-center space-x-1"
+                    className="px-3.5 py-1.5 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-200 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-700 rounded-xl text-xs font-bold transition-all shadow-xs flex items-center space-x-1 cursor-pointer"
                   >
                     <X className="h-3.5 w-3.5" />
                     <span>Clear Filter / Close</span>
@@ -543,43 +551,43 @@ const BudgetPlanning = () => {
 
               {/* Subcategory Summary Stats */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div className="bg-white p-3 rounded-xl border border-indigo-100 shadow-xs">
-                  <span className="text-[11px] text-gray-500 font-semibold block">Allocated Budget</span>
-                  <span className="text-base font-bold text-gray-800">₹{selectedSubcategory.allocatedBudget.toLocaleString('en-IN')}</span>
+                <div className="bg-white dark:bg-slate-800/80 p-3 rounded-xl border border-indigo-100 dark:border-indigo-900/50 shadow-xs">
+                  <span className="text-[11px] text-gray-500 dark:text-slate-400 font-semibold block">Allocated Budget</span>
+                  <span className="text-base font-bold text-gray-800 dark:text-slate-100">₹{selectedSubcategory.allocatedBudget.toLocaleString('en-IN')}</span>
                 </div>
-                <div className="bg-white p-3 rounded-xl border border-indigo-100 shadow-xs">
-                  <span className="text-[11px] text-gray-500 font-semibold block">Total Spent</span>
-                  <span className={`text-base font-bold ${selectedSubcategory.spentAmount > selectedSubcategory.allocatedBudget ? 'text-red-600' : 'text-emerald-600'}`}>
+                <div className="bg-white dark:bg-slate-800/80 p-3 rounded-xl border border-indigo-100 dark:border-indigo-900/50 shadow-xs">
+                  <span className="text-[11px] text-gray-500 dark:text-slate-400 font-semibold block">Total Spent</span>
+                  <span className={`text-base font-bold ${selectedSubcategory.spentAmount > selectedSubcategory.allocatedBudget ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
                     ₹{selectedSubcategory.spentAmount.toLocaleString('en-IN')}
                   </span>
                 </div>
-                <div className="bg-white p-3 rounded-xl border border-indigo-100 shadow-xs">
-                  <span className="text-[11px] text-gray-500 font-semibold block">Remaining</span>
-                  <span className={`text-base font-bold ${selectedSubcategory.allocatedBudget - selectedSubcategory.spentAmount < 0 ? 'text-red-600' : 'text-gray-800'}`}>
+                <div className="bg-white dark:bg-slate-800/80 p-3 rounded-xl border border-indigo-100 dark:border-indigo-900/50 shadow-xs">
+                  <span className="text-[11px] text-gray-500 dark:text-slate-400 font-semibold block">Remaining</span>
+                  <span className={`text-base font-bold ${selectedSubcategory.allocatedBudget - selectedSubcategory.spentAmount < 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-800 dark:text-slate-100'}`}>
                     ₹{Math.max(0, selectedSubcategory.allocatedBudget - selectedSubcategory.spentAmount).toLocaleString('en-IN')}
                   </span>
                 </div>
-                <div className="bg-white p-3 rounded-xl border border-indigo-100 shadow-xs">
-                  <span className="text-[11px] text-gray-500 font-semibold block">Transactions</span>
-                  <span className="text-base font-bold text-indigo-700">{subcategoryTransactions.length}</span>
+                <div className="bg-white dark:bg-slate-800/80 p-3 rounded-xl border border-indigo-100 dark:border-indigo-900/50 shadow-xs">
+                  <span className="text-[11px] text-gray-500 dark:text-slate-400 font-semibold block">Transactions</span>
+                  <span className="text-base font-bold text-indigo-700 dark:text-indigo-400">{subcategoryTransactions.length}</span>
                 </div>
               </div>
 
               {/* Transactions Card Grid (matching Dashboard recent transactions layout) */}
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
-                  <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center space-x-1.5">
-                    <Receipt className="h-4 w-4 text-indigo-600" />
+                  <h4 className="text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider flex items-center space-x-1.5">
+                    <Receipt className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
                     <span>Transactions for {selectedSubcategory.name}</span>
                   </h4>
-                  <span className="text-xs text-gray-500 font-medium bg-white px-2.5 py-1 rounded-lg border border-indigo-100 shadow-xs">
+                  <span className="text-xs text-gray-500 dark:text-slate-400 font-medium bg-white dark:bg-slate-800 px-2.5 py-1 rounded-lg border border-indigo-100 dark:border-slate-700 shadow-xs">
                     {subcategoryTransactions.length} transaction{subcategoryTransactions.length !== 1 ? 's' : ''}
                   </span>
                 </div>
 
                 {loadingTransactions ? (
-                  <div className="py-10 flex items-center justify-center text-gray-400">
-                    <Loader2 className="animate-spin h-6 w-6 mr-2 text-indigo-600" />
+                  <div className="py-10 flex items-center justify-center text-gray-400 dark:text-slate-500">
+                    <Loader2 className="animate-spin h-6 w-6 mr-2 text-indigo-600 dark:text-indigo-400" />
                     <span className="text-sm font-medium">Loading transactions...</span>
                   </div>
                 ) : subcategoryTransactions.length > 0 ? (
@@ -587,48 +595,49 @@ const BudgetPlanning = () => {
                     {subcategoryTransactions.map(tx => (
                       <div
                         key={tx._id}
-                        className="p-4 bg-white rounded-2xl border border-indigo-100/90 shadow-xs flex flex-col justify-between hover:shadow-md hover:border-indigo-300 transition-all"
+                        className="p-4 bg-white dark:bg-slate-800 rounded-2xl border border-indigo-100/90 dark:border-slate-700/80 shadow-xs flex flex-col justify-between hover:shadow-md hover:border-indigo-300 dark:hover:border-indigo-600 transition-all"
                       >
                         <div>
                           <div className="flex justify-between items-start">
-                            <span className="font-semibold text-gray-900 text-sm truncate max-w-[150px]" title={tx.description || 'General'}>
+                            <span className="font-semibold text-gray-900 dark:text-slate-100 text-sm truncate max-w-[150px]" title={tx.description || 'General'}>
                               {tx.description || 'General'}
                             </span>
-                            <span className="text-sm font-bold text-red-600 pl-2 whitespace-nowrap">
+                            <span className="text-sm font-bold text-red-600 dark:text-red-400 pl-2 whitespace-nowrap">
                               - ₹{tx.amount.toLocaleString('en-IN')}
                             </span>
                           </div>
-                          <div className="flex flex-wrap items-center gap-1.5 text-[10px] text-gray-500 mt-2.5">
-                            <span className="bg-blue-50 text-blue-700 px-2 py-0.5 rounded font-bold uppercase tracking-wider">
+
+                          <div className="flex flex-wrap items-center gap-1.5 text-[10px] text-gray-500 dark:text-slate-400 mt-2.5">
+                            <span className="bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-400 px-2 py-0.5 rounded font-bold uppercase tracking-wider">
                               {selectedSubcategory.categoryName || tx.categoryName || 'Category'}
                             </span>
-                            <span className="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded font-bold uppercase tracking-wider">
+                            <span className="bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 px-2 py-0.5 rounded font-bold uppercase tracking-wider">
                               {selectedSubcategory.name || tx.subcategoryName}
                             </span>
                             {tx.paymentMethod && (
-                              <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded font-medium">
+                              <span className="bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-slate-300 px-2 py-0.5 rounded font-medium">
                                 {tx.paymentMethod}
                               </span>
                             )}
                           </div>
                         </div>
 
-                        <div className="text-[10px] text-gray-400 mt-4 pt-3 border-t border-gray-100 flex justify-between items-center font-medium">
-                          <div className="flex items-center space-x-1.5 text-gray-400">
+                        <div className="text-[10px] text-gray-400 dark:text-slate-400 mt-4 pt-3 border-t border-gray-100 dark:border-slate-700/60 flex justify-between items-center font-medium">
+                          <div className="flex items-center space-x-1.5 text-gray-400 dark:text-slate-400">
                             <Calendar className="h-3 w-3" />
                             <span>{new Date(tx.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
                           </div>
                           <div className="flex items-center space-x-1">
                             <button
                               onClick={() => handleOpenEditTx(tx)}
-                              className="text-gray-400 hover:text-indigo-600 p-1.5 rounded-lg border border-gray-100 hover:bg-indigo-50 hover:border-indigo-200 transition-colors"
+                              className="text-gray-400 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 p-1.5 rounded-lg border border-gray-100 dark:border-slate-700 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 hover:border-indigo-200 transition-colors cursor-pointer"
                               title="Edit Transaction"
                             >
                               <Pencil className="h-3.5 w-3.5" />
                             </button>
                             <button
                               onClick={() => handleDeleteTx(tx._id)}
-                              className="text-gray-400 hover:text-red-600 p-1.5 rounded-lg border border-gray-100 hover:bg-red-50 hover:border-red-200 transition-colors"
+                              className="text-gray-400 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 p-1.5 rounded-lg border border-gray-100 dark:border-slate-700 hover:bg-red-50 dark:hover:bg-red-950/50 hover:border-red-200 transition-colors cursor-pointer"
                               title="Delete Transaction"
                             >
                               <Trash2 className="h-3.5 w-3.5" />
@@ -639,10 +648,10 @@ const BudgetPlanning = () => {
                     ))}
                   </div>
                 ) : (
-                  <div className="p-8 bg-white/80 rounded-2xl border border-dashed border-indigo-200 text-center text-gray-400">
-                    <Receipt className="h-10 w-10 mx-auto text-indigo-300 mb-2" />
-                    <p className="text-sm text-gray-700 font-semibold">No transactions recorded for {selectedSubcategory.name}</p>
-                    <p className="text-xs text-gray-400 mt-1">Expenses recorded under this subcategory in this month will appear as cards here.</p>
+                  <div className="p-8 bg-white/80 dark:bg-slate-800/60 rounded-2xl border border-dashed border-indigo-200 dark:border-indigo-900/60 text-center text-gray-400 dark:text-slate-400">
+                    <Receipt className="h-10 w-10 mx-auto text-indigo-300 dark:text-indigo-500 mb-2" />
+                    <p className="text-sm text-gray-700 dark:text-slate-300 font-semibold">No transactions recorded for {selectedSubcategory.name}</p>
+                    <p className="text-xs text-gray-400 dark:text-slate-400 mt-1">Expenses recorded under this subcategory in this month will appear as cards here.</p>
                   </div>
                 )}
               </div>
@@ -658,15 +667,15 @@ const BudgetPlanning = () => {
               }, 0) : 0;
 
               return (
-                <div key={cat._id} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                <div key={cat._id} className="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800">
                   {/* Category Header */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-gray-100">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-gray-100 dark:border-slate-800">
                     {editingCategoryId === cat._id ? (
                       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full">
                         <input
                           type="text"
                           required
-                          className="flex-1 px-3 py-1.5 text-base rounded-lg border border-gray-200 focus:outline-none focus:border-brand-500"
+                          className="flex-1 px-3 py-1.5 text-base rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 focus:outline-none focus:border-brand-500"
                           value={editingCategoryName}
                           onChange={(e) => setEditingCategoryName(e.target.value)}
                           autoFocus
@@ -674,7 +683,7 @@ const BudgetPlanning = () => {
                         <div className="flex space-x-2">
                           <button
                             onClick={() => handleUpdateCategory(cat._id)}
-                            className="flex-1 sm:flex-initial px-3 py-1.5 bg-brand-500 text-white rounded-lg hover:bg-brand-600 text-sm font-semibold transition-all shadow-sm"
+                            className="flex-1 sm:flex-initial px-3 py-1.5 bg-brand-500 text-white rounded-lg hover:bg-brand-600 text-sm font-semibold transition-all shadow-sm cursor-pointer"
                           >
                             Save
                           </button>
@@ -683,7 +692,7 @@ const BudgetPlanning = () => {
                               setEditingCategoryId(null);
                               setEditingCategoryName('');
                             }}
-                            className="flex-1 sm:flex-initial px-3 py-1.5 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 text-sm font-semibold transition-all"
+                            className="flex-1 sm:flex-initial px-3 py-1.5 bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-slate-200 rounded-lg hover:bg-gray-300 dark:hover:bg-slate-600 text-sm font-semibold transition-all cursor-pointer"
                           >
                             Cancel
                           </button>
@@ -692,8 +701,8 @@ const BudgetPlanning = () => {
                     ) : (
                       <>
                         <div className="flex items-center space-x-2">
-                          <Layers className="h-5 w-5 text-gray-400" />
-                          <h4 className="text-lg font-bold text-gray-800">{cat.name}</h4>
+                          <Layers className="h-5 w-5 text-gray-400 dark:text-slate-500" />
+                          <h4 className="text-lg font-bold text-gray-800 dark:text-slate-100">{cat.name}</h4>
                         </div>
                         <div className="flex items-center space-x-2 self-end sm:self-auto">
                           <button
@@ -701,7 +710,7 @@ const BudgetPlanning = () => {
                               setEditingCategoryId(cat._id);
                               setEditingCategoryName(cat.name);
                             }}
-                            className="text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 border border-gray-200 text-xs px-2.5 py-1.5 rounded-lg transition-colors font-semibold flex items-center space-x-1"
+                            className="text-gray-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 border border-gray-200 dark:border-slate-700 text-xs px-2.5 py-1.5 rounded-lg transition-colors font-semibold flex items-center space-x-1 cursor-pointer"
                             title="Edit Category Name"
                           >
                             <Pencil className="h-3.5 w-3.5" />
@@ -709,7 +718,7 @@ const BudgetPlanning = () => {
                           </button>
                           <button
                             onClick={() => handleDeleteCategoryClick(cat._id, cat.name)}
-                            className="text-gray-500 hover:text-red-600 hover:bg-red-50 border border-gray-200 text-xs px-2.5 py-1.5 rounded-lg transition-colors font-semibold flex items-center space-x-1"
+                            className="text-gray-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/50 border border-gray-200 dark:border-slate-700 text-xs px-2.5 py-1.5 rounded-lg transition-colors font-semibold flex items-center space-x-1 cursor-pointer"
                             title="Delete Category"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
@@ -728,12 +737,11 @@ const BudgetPlanning = () => {
                           const actualPercent = sub.allocatedBudget > 0 ? (sub.spentAmount / sub.allocatedBudget) * 100 : 0;
                           const isOverspent = sub.spentAmount > sub.allocatedBudget;
                           const isWarning = !isOverspent && actualPercent >= 70;
-                          const percent = Math.min(actualPercent, 100);
 
                           const isEditing = editingSubcategoryId === sub._id;
                           const isSelected = selectedSubcategory?._id === sub._id;
                           const hoverBorderClass = isSelected
-                            ? 'border-indigo-500 ring-2 ring-indigo-400/30 bg-indigo-50/20'
+                            ? 'border-indigo-500 ring-2 ring-indigo-400/30 bg-indigo-50/20 dark:bg-indigo-950/30'
                             : isOverspent
                             ? 'hover:border-red-500'
                             : isWarning
@@ -744,14 +752,14 @@ const BudgetPlanning = () => {
                             <div
                               key={sub._id}
                               onClick={() => !isEditing && handleSelectSubcategory(sub, cat)}
-                              className={`p-4 bg-gray-50 rounded-xl border border-gray-100 flex items-center justify-between group hover:shadow-md min-h-[110px] relative transition-all duration-200 cursor-pointer ${hoverBorderClass}`}
+                              className={`p-4 bg-gray-50 dark:bg-slate-800/60 rounded-xl border border-gray-100 dark:border-slate-700/60 flex items-center justify-between group hover:shadow-md min-h-[110px] relative transition-all duration-200 cursor-pointer ${hoverBorderClass}`}
                             >
                               {isEditing ? (
                                 <div className="space-y-2 w-full" onClick={(e) => e.stopPropagation()}>
                                   <input
                                     type="text"
                                     required
-                                    className="w-full px-3 py-1.5 text-sm rounded-lg border border-gray-200 focus:outline-none focus:border-brand-500 bg-white"
+                                    className="w-full px-3 py-1.5 text-sm rounded-lg border border-gray-200 dark:border-slate-700 focus:outline-none focus:border-brand-500 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100"
                                     placeholder="Subcategory Name"
                                     value={editingSubcategoryName}
                                     onChange={(e) => setEditingSubcategoryName(e.target.value)}
@@ -760,7 +768,7 @@ const BudgetPlanning = () => {
                                   <input
                                     type="number"
                                     required
-                                    className="w-full px-3 py-1.5 text-sm rounded-lg border border-gray-200 focus:outline-none focus:border-brand-500 bg-white"
+                                    className="w-full px-3 py-1.5 text-sm rounded-lg border border-gray-200 dark:border-slate-700 focus:outline-none focus:border-brand-500 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100"
                                     placeholder="Budget (₹)"
                                     value={editingSubcategoryAmount}
                                     onChange={(e) => setEditingSubcategoryAmount(e.target.value)}
@@ -768,7 +776,7 @@ const BudgetPlanning = () => {
                                   <div className="flex space-x-2 justify-end">
                                     <button
                                       onClick={() => handleUpdateSubcategory(sub._id)}
-                                      className="px-3 py-1 bg-brand-500 text-white text-xs rounded-lg hover:bg-brand-600 font-semibold transition-all shadow-sm"
+                                      className="px-3 py-1 bg-brand-500 text-white text-xs rounded-lg hover:bg-brand-600 font-semibold transition-all shadow-sm cursor-pointer"
                                     >
                                       Save
                                     </button>
@@ -778,7 +786,7 @@ const BudgetPlanning = () => {
                                         setEditingSubcategoryName('');
                                         setEditingSubcategoryAmount('');
                                       }}
-                                      className="px-3 py-1 bg-gray-200 text-gray-700 text-xs rounded-lg hover:bg-gray-300 font-semibold transition-all"
+                                      className="px-3 py-1 bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-slate-200 text-xs rounded-lg hover:bg-gray-300 dark:hover:bg-slate-600 font-semibold transition-all cursor-pointer"
                                     >
                                       Cancel
                                     </button>
@@ -788,7 +796,7 @@ const BudgetPlanning = () => {
                                 <div className="w-full flex flex-col justify-between space-y-2.5">
                                   {/* Top Row: Subcategory Name & Actions */}
                                   <div className="flex items-center justify-between w-full">
-                                    <span className="font-bold text-gray-800 truncate block text-sm" title={sub.name}>
+                                    <span className="font-bold text-gray-800 dark:text-slate-100 truncate block text-sm" title={sub.name}>
                                       {sub.name}
                                     </span>
                                     {/* Visible Actions */}
@@ -800,7 +808,7 @@ const BudgetPlanning = () => {
                                           setEditingSubcategoryName(sub.name);
                                           setEditingSubcategoryAmount(sub.allocatedBudget);
                                         }}
-                                        className="p-1.5 rounded-lg border border-gray-200/90 bg-white text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 hover:border-indigo-200 transition-all shadow-xs"
+                                        className="p-1.5 rounded-lg border border-gray-200/90 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 hover:border-indigo-200 transition-all shadow-xs cursor-pointer"
                                         title="Edit Subcategory"
                                         aria-label="Edit subcategory"
                                       >
@@ -811,7 +819,7 @@ const BudgetPlanning = () => {
                                           e.stopPropagation();
                                           handleDeleteSubcategoryClick(sub._id, sub.name, sub.allocatedBudget);
                                         }}
-                                        className="p-1.5 rounded-lg border border-gray-200/90 bg-white text-gray-500 hover:text-red-600 hover:bg-red-50 hover:border-red-200 transition-all shadow-xs"
+                                        className="p-1.5 rounded-lg border border-gray-200/90 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/50 hover:border-red-200 transition-all shadow-xs cursor-pointer"
                                         title="Delete Subcategory"
                                         aria-label="Delete subcategory"
                                       >
@@ -823,15 +831,15 @@ const BudgetPlanning = () => {
                                   {/* Middle Row: Spending & Donut Chart */}
                                   <div className="flex items-center justify-between">
                                     <div className="min-w-0 flex-1 pr-2">
-                                      <div className="text-xs text-gray-500 font-medium">
-                                        Spent <span className="font-bold text-gray-800">₹{sub.spentAmount.toLocaleString('en-IN')}</span> of ₹{sub.allocatedBudget.toLocaleString('en-IN')}
+                                      <div className="text-xs text-gray-500 dark:text-slate-400 font-medium">
+                                        Spent <span className="font-bold text-gray-800 dark:text-slate-100">₹{sub.spentAmount.toLocaleString('en-IN')}</span> of ₹{sub.allocatedBudget.toLocaleString('en-IN')}
                                       </div>
                                       {sub.spentAmount > sub.allocatedBudget ? (
-                                        <div className="text-[10px] font-bold text-red-600 mt-0.5 flex items-center">
+                                        <div className="text-[10px] font-bold text-red-600 dark:text-red-400 mt-0.5 flex items-center">
                                           ⚠️ Over budget by ₹{(sub.spentAmount - sub.allocatedBudget).toLocaleString('en-IN')}
                                         </div>
                                       ) : (
-                                        <div className="text-[10px] text-gray-400 mt-0.5">
+                                        <div className="text-[10px] text-gray-400 dark:text-slate-400 mt-0.5">
                                           ₹{Math.max(0, sub.allocatedBudget - sub.spentAmount).toLocaleString('en-IN')} remaining
                                         </div>
                                       )}
@@ -868,14 +876,21 @@ const BudgetPlanning = () => {
                                                 if (item.name === 'Spent') {
                                                   return <Cell key="spent" fill={isOverspent ? '#ef4444' : isWarning ? '#f59e0b' : '#10b981'} />;
                                                 }
-                                                return <Cell key="remaining" fill="#d1d5db" />;
+                                                return <Cell key="remaining" fill={isDark ? '#334155' : '#d1d5db'} />;
                                               });
                                             })()}
                                           </Pie>
                                           <Tooltip
                                             formatter={(value) => `₹${value}`}
-                                            contentStyle={{ fontSize: '10px', padding: '2px 6px', borderRadius: '4px', border: '1px solid #e5e7eb' }}
-                                            itemStyle={{ color: '#1f2937' }}
+                                            contentStyle={{ 
+                                              fontSize: '10px', 
+                                              padding: '2px 6px', 
+                                              borderRadius: '6px', 
+                                              border: isDark ? '1px solid #334155' : '1px solid #e5e7eb',
+                                              backgroundColor: isDark ? '#0f172a' : '#ffffff',
+                                              color: isDark ? '#f8fafc' : '#0f172a'
+                                            }}
+                                            itemStyle={{ color: isDark ? '#f8fafc' : '#1f2937' }}
                                           />
                                         </PieChart>
                                       </ResponsiveContainer>
@@ -883,7 +898,7 @@ const BudgetPlanning = () => {
                                   </div>
 
                                   {/* Bottom Row: Explicit View Transactions button & percentage badge */}
-                                  <div className="pt-2 border-t border-gray-100 flex items-center justify-between">
+                                  <div className="pt-2 border-t border-gray-100 dark:border-slate-700/60 flex items-center justify-between">
                                     <button
                                       type="button"
                                       onClick={(e) => {
@@ -892,8 +907,8 @@ const BudgetPlanning = () => {
                                       }}
                                       className={`text-[11px] font-bold px-2.5 py-1 rounded-lg flex items-center space-x-1.5 transition-all shadow-xs cursor-pointer ${
                                         isSelected
-                                          ? 'bg-indigo-600 text-white shadow-indigo-200'
-                                          : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-100'
+                                          ? 'bg-indigo-600 text-white shadow-indigo-500/20'
+                                          : 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/80 border border-indigo-100 dark:border-indigo-900/40'
                                       }`}
                                     >
                                       <Receipt className="h-3 w-3" />
@@ -902,8 +917,8 @@ const BudgetPlanning = () => {
                                     <span
                                       className="text-[10px] font-extrabold px-1.5 py-0.5 rounded-md"
                                       style={{
-                                        color: isOverspent ? '#ef4444' : isWarning ? '#d97706' : '#059669',
-                                        backgroundColor: isOverspent ? '#fef2f2' : isWarning ? '#fffbeb' : '#ecfdf5'
+                                        color: isOverspent ? (isDark ? '#f87171' : '#ef4444') : isWarning ? (isDark ? '#fbbf24' : '#d97706') : (isDark ? '#4ade80' : '#059669'),
+                                        backgroundColor: isOverspent ? (isDark ? 'rgba(239, 68, 68, 0.2)' : '#fef2f2') : isWarning ? (isDark ? 'rgba(245, 158, 11, 0.2)' : '#fffbeb') : (isDark ? 'rgba(16, 185, 129, 0.2)' : '#ecfdf5')
                                       }}
                                     >
                                       {actualPercent.toFixed(0)}% Utilized
@@ -917,9 +932,9 @@ const BudgetPlanning = () => {
                       </div>
 
                       {/* Subcategory Allocation Breakdown and Color Legend (Interactive Clickable Pie Chart) */}
-                      <div className="pt-6 border-t border-gray-100 flex flex-col md:flex-row items-center md:items-start gap-6">
+                      <div className="pt-6 border-t border-gray-100 dark:border-slate-800 flex flex-col md:flex-row items-center md:items-start gap-6">
                         {/* Allocation Chart */}
-                        <div className="w-full md:w-48 h-40 flex-shrink-0 flex flex-col items-center justify-center bg-gray-50 rounded-xl p-2 border border-gray-100 self-center">
+                        <div className="w-full md:w-48 h-40 flex-shrink-0 flex flex-col items-center justify-center bg-gray-50 dark:bg-slate-800/40 rounded-xl p-2 border border-gray-100 dark:border-slate-800 self-center">
                           <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
                               <Pie
@@ -980,7 +995,7 @@ const BudgetPlanning = () => {
                                       <Cell
                                         key={`cell-${idx}`}
                                         fill={color}
-                                        stroke={isSelected ? '#4f46e5' : '#ffffff'}
+                                        stroke={isSelected ? '#4f46e5' : isDark ? '#0f172a' : '#ffffff'}
                                         strokeWidth={isSelected ? 3 : 1}
                                         className="cursor-pointer hover:opacity-85 transition-all"
                                       />
@@ -990,21 +1005,27 @@ const BudgetPlanning = () => {
                               </Pie>
                               <Tooltip
                                 formatter={(value) => `₹${value}`}
-                                contentStyle={{ fontSize: '12px', borderRadius: '8px', border: '1px solid #e5e7eb' }}
-                                itemStyle={{ color: '#1f2937' }}
+                                contentStyle={{ 
+                                  fontSize: '12px', 
+                                  borderRadius: '8px', 
+                                  border: isDark ? '1px solid #334155' : '1px solid #e5e7eb',
+                                  backgroundColor: isDark ? '#0f172a' : '#ffffff',
+                                  color: isDark ? '#f8fafc' : '#0f172a'
+                                }}
+                                itemStyle={{ color: isDark ? '#f8fafc' : '#1f2937' }}
                               />
                             </PieChart>
                           </ResponsiveContainer>
-                          <span className="text-[10px] text-gray-400 font-medium mt-0.5">Click slice to view transactions</span>
+                          <span className="text-[10px] text-gray-400 dark:text-slate-400 font-medium mt-0.5">Click slice to view transactions</span>
                         </div>
 
                         {/* Clickable Legend */}
                         <div className="flex-1 w-full">
                           <div className="flex items-center justify-between mb-3">
-                            <h5 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                            <h5 className="text-[10px] font-bold text-gray-400 dark:text-slate-400 uppercase tracking-wider">
                               Subcategory Allocation Breakdown
                             </h5>
-                            <span className="text-[10px] text-indigo-600 font-bold">Click any item to filter</span>
+                            <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-bold">Click any item to filter</span>
                           </div>
 
                           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -1018,26 +1039,26 @@ const BudgetPlanning = () => {
                                   key={sub._id}
                                   type="button"
                                   onClick={() => handleSelectSubcategory(sub, cat)}
-                                  className={`flex items-center space-x-2 text-xs p-2 rounded-xl border text-left transition-all ${
+                                  className={`flex items-center space-x-2 text-xs p-2 rounded-xl border text-left transition-all cursor-pointer ${
                                     isSelected
-                                      ? 'bg-indigo-50 border-indigo-300 ring-2 ring-indigo-200'
-                                      : 'border-gray-100 hover:border-gray-200 hover:bg-gray-50 bg-white'
+                                      ? 'bg-indigo-50 dark:bg-indigo-950/40 border-indigo-300 dark:border-indigo-700 ring-2 ring-indigo-200 dark:ring-indigo-900/50'
+                                      : 'border-gray-100 dark:border-slate-700/60 hover:border-gray-200 dark:hover:border-slate-600 hover:bg-gray-50 dark:hover:bg-slate-800 bg-white dark:bg-slate-800/70'
                                   }`}
                                 >
                                   <div className="w-3 h-3 rounded-full flex-shrink-0 shadow-sm" style={{ backgroundColor: color }}></div>
                                   <div className="min-w-0 flex-1">
-                                    <span className="text-gray-800 font-semibold truncate block max-w-[110px]">{sub.name}</span>
-                                    <span className="text-gray-400 text-[10px] font-medium block">₹{sub.allocatedBudget}</span>
+                                    <span className="text-gray-800 dark:text-slate-100 font-semibold truncate block max-w-[110px]">{sub.name}</span>
+                                    <span className="text-gray-400 dark:text-slate-400 text-[10px] font-medium block">₹{sub.allocatedBudget}</span>
                                   </div>
                                 </button>
                               );
                             })}
                             {totalOverspent > 0 && (
-                              <div className="flex items-center space-x-2 text-xs p-2 rounded-xl border border-red-100 bg-red-50 text-red-700 font-bold">
+                              <div className="flex items-center space-x-2 text-xs p-2 rounded-xl border border-red-100 dark:border-red-900/50 bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-400 font-bold">
                                 <div className="w-3 h-3 rounded-full bg-red-500 flex-shrink-0 shadow-sm"></div>
                                 <div>
                                   <span className="block text-[11px]">Total Overspent</span>
-                                  <span className="text-red-600 text-[10px] font-medium block">+₹{totalOverspent}</span>
+                                  <span className="text-red-600 dark:text-red-400 text-[10px] font-medium block">+₹{totalOverspent}</span>
                                 </div>
                               </div>
                             )}
@@ -1046,7 +1067,7 @@ const BudgetPlanning = () => {
                       </div>
                     </div>
                   ) : (
-                    <p className="text-sm text-gray-500 italic">No subcategories added yet.</p>
+                    <p className="text-sm text-gray-500 dark:text-slate-400 italic">No subcategories added yet.</p>
                   )}
                 </div>
               );
@@ -1057,16 +1078,16 @@ const BudgetPlanning = () => {
 
       {/* Edit Transaction Modal */}
       {editTxModal.isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/55 backdrop-blur-sm transition-opacity">
-          <div className="bg-white rounded-3xl p-6 max-w-lg w-full shadow-2xl border border-gray-100 transform scale-100 transition-all duration-200">
-            <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/80 backdrop-blur-sm transition-opacity">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 max-w-lg w-full shadow-2xl border border-gray-100 dark:border-slate-800 transform scale-100 transition-all duration-200 animate-fadeIn">
+            <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-100 dark:border-slate-800">
               <div className="flex items-center space-x-2">
-                <Pencil className="h-5 w-5 text-indigo-600" />
-                <h4 className="text-lg font-bold text-gray-900">Edit Transaction</h4>
+                <Pencil className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                <h4 className="text-lg font-bold text-gray-900 dark:text-slate-100">Edit Transaction</h4>
               </div>
               <button
                 onClick={() => setEditTxModal({ isOpen: false, id: null, amount: '', description: '', date: '', categoryId: '', subcategoryId: '', paymentMethod: 'UPI' })}
-                className="text-gray-400 hover:text-gray-600 font-bold text-sm p-1"
+                className="text-gray-400 dark:text-slate-400 hover:text-gray-600 dark:hover:text-slate-200 font-bold text-sm p-1 cursor-pointer"
               >
                 ✕
               </button>
@@ -1075,26 +1096,26 @@ const BudgetPlanning = () => {
             <form onSubmit={handleSaveEditTx} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Date</label>
+                  <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1">Date</label>
                   <input
                     type="date"
                     required
                     disabled={isUpdatingTx}
-                    className="w-full px-3.5 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full px-3.5 py-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     value={editTxModal.date}
                     onChange={(e) => setEditTxModal({ ...editTxModal, date: e.target.value })}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Amount (₹)</label>
+                  <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1">Amount (₹)</label>
                   <input
                     type="number"
                     step="0.01"
                     min="0.01"
                     required
                     disabled={isUpdatingTx}
-                    className="w-full px-3.5 py-2 rounded-xl border border-gray-200 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full px-3.5 py-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     value={editTxModal.amount}
                     onChange={(e) => setEditTxModal({ ...editTxModal, amount: e.target.value })}
                   />
@@ -1103,11 +1124,11 @@ const BudgetPlanning = () => {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Category</label>
+                  <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1">Category</label>
                   <select
                     required
                     disabled={isUpdatingTx}
-                    className="w-full px-3.5 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+                    className="w-full px-3.5 py-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     value={editTxModal.categoryId}
                     onChange={(e) => {
                       setEditTxModal({
@@ -1123,11 +1144,11 @@ const BudgetPlanning = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Subcategory</label>
+                  <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1">Subcategory</label>
                   <select
                     required
                     disabled={!editTxModal.categoryId || isUpdatingTx}
-                    className="w-full px-3.5 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+                    className="w-full px-3.5 py-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100 dark:disabled:bg-slate-800/50 disabled:text-gray-400 dark:disabled:text-slate-500"
                     value={editTxModal.subcategoryId}
                     onChange={(e) => setEditTxModal({ ...editTxModal, subcategoryId: e.target.value })}
                   >
@@ -1140,10 +1161,10 @@ const BudgetPlanning = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Payment Method</label>
+                <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1">Payment Method</label>
                 <select
                   disabled={isUpdatingTx}
-                  className="w-full px-3.5 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+                  className="w-full px-3.5 py-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   value={editTxModal.paymentMethod}
                   onChange={(e) => setEditTxModal({ ...editTxModal, paymentMethod: e.target.value })}
                 >
@@ -1157,12 +1178,12 @@ const BudgetPlanning = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Note / Description</label>
+                <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1">Note / Description</label>
                 <input
                   type="text"
                   placeholder="e.g. Groceries"
                   disabled={isUpdatingTx}
-                  className="w-full px-3.5 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-3.5 py-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   value={editTxModal.description}
                   onChange={(e) => setEditTxModal({ ...editTxModal, description: e.target.value })}
                 />
@@ -1173,14 +1194,14 @@ const BudgetPlanning = () => {
                   type="button"
                   onClick={() => setEditTxModal({ isOpen: false, id: null, amount: '', description: '', date: '', categoryId: '', subcategoryId: '', paymentMethod: 'UPI' })}
                   disabled={isUpdatingTx}
-                  className="w-full py-2.5 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 text-sm font-semibold transition-all"
+                  className="w-full py-2.5 bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300 rounded-xl hover:bg-gray-200 dark:hover:bg-slate-700 text-sm font-semibold transition-all cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isUpdatingTx}
-                  className="w-full py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 text-sm font-semibold transition-all shadow-md shadow-indigo-200 flex items-center justify-center space-x-2"
+                  className="w-full py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 text-sm font-semibold transition-all shadow-md shadow-indigo-500/20 flex items-center justify-center space-x-2 cursor-pointer"
                 >
                   {isUpdatingTx ? (
                     <>
@@ -1199,26 +1220,26 @@ const BudgetPlanning = () => {
 
       {/* Delete Category / Subcategory Confirmation Modal */}
       {deleteConfirm.isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/55 backdrop-blur-sm transition-opacity">
-          <div className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl border border-gray-100 transform scale-100 transition-all duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/80 backdrop-blur-sm transition-opacity">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 max-w-sm w-full shadow-2xl border border-gray-100 dark:border-slate-800 transform scale-100 transition-all duration-200 animate-fadeIn">
             <div className="flex flex-col items-center text-center space-y-4 mb-5">
-              <div className="p-4 bg-red-50 text-red-500 rounded-2xl">
+              <div className="p-4 bg-red-50 dark:bg-red-950/60 text-red-500 dark:text-red-400 rounded-2xl">
                 <Trash2 className="h-7 w-7" />
               </div>
               <div>
-                <h4 className="text-lg font-bold text-gray-950">
+                <h4 className="text-lg font-bold text-gray-950 dark:text-slate-100">
                   Delete {deleteConfirm.type === 'category' ? 'Category' : 'Subcategory'}?
                 </h4>
-                <p className="text-xs text-gray-500 mt-1">This action cannot be undone.</p>
+                <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">This action cannot be undone.</p>
               </div>
             </div>
 
-            <p className="text-sm text-gray-600 text-center mb-4">
-              Are you sure you want to delete <span className="font-bold text-gray-800">"{deleteConfirm.name}"</span>?
+            <p className="text-sm text-gray-600 dark:text-slate-300 text-center mb-4">
+              Are you sure you want to delete <span className="font-bold text-gray-800 dark:text-slate-100">"{deleteConfirm.name}"</span>?
             </p>
 
             {deleteConfirm.extra && (
-              <div className="p-3 bg-red-50/70 border border-red-100 rounded-xl text-xs text-red-700 font-medium mb-6">
+              <div className="p-3 bg-red-50/70 dark:bg-red-950/40 border border-red-100 dark:border-red-900/50 rounded-xl text-xs text-red-700 dark:text-red-300 font-medium mb-6">
                 ⚠️ {deleteConfirm.extra}
               </div>
             )}
@@ -1226,13 +1247,13 @@ const BudgetPlanning = () => {
             <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={() => setDeleteConfirm({ isOpen: false, type: '', id: '', name: '', extra: '' })}
-                className="w-full py-2.5 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 text-sm font-semibold transition-all"
+                className="w-full py-2.5 bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300 rounded-xl hover:bg-gray-200 dark:hover:bg-slate-700 text-sm font-semibold transition-all cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 onClick={confirmDelete}
-                className="w-full py-2.5 bg-red-600 text-white rounded-xl hover:bg-red-700 text-sm font-semibold transition-all shadow-md shadow-red-100"
+                className="w-full py-2.5 bg-red-600 text-white rounded-xl hover:bg-red-700 text-sm font-semibold transition-all shadow-md shadow-red-500/20 cursor-pointer"
               >
                 Delete
               </button>

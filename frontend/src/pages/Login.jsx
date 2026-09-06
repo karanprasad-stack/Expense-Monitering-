@@ -36,37 +36,41 @@ const Login = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-brand-50 to-brand-100 p-4">
-      <div className="max-w-md w-full glass-card rounded-2xl p-8">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-brand-50 to-brand-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-4 transition-colors duration-200">
+      <div className="max-w-md w-full glass-card dark:bg-slate-900/90 dark:border-slate-800 rounded-3xl p-8 shadow-xl">
         <div className="flex flex-col items-center mb-8">
           <div className="h-16 w-16 bg-brand-500 rounded-2xl shadow-lg shadow-brand-500/30 flex items-center justify-center text-white mb-4">
             <Wallet size={32} />
           </div>
-          <h2 className="text-3xl font-black text-gray-800">Welcome Back</h2>
-          <p className="text-gray-500 mt-2">Manage your budget effectively</p>
+          <h2 className="text-3xl font-black text-gray-800 dark:text-slate-100">Welcome Back</h2>
+          <p className="text-gray-500 dark:text-slate-400 mt-2">Manage your budget effectively</p>
         </div>
 
-        {error && <div className="mb-4 p-3 bg-red-100 text-red-600 rounded-lg text-sm">{error}</div>}
+        {error && (
+          <div className="mb-4 p-3 bg-red-100 dark:bg-red-950/50 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/50 rounded-xl text-sm font-medium">
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Email</label>
             <input
               type="email"
               required
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none transition-all"
+              className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none transition-all"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Password</label>
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
                 required
-                className="w-full px-4 py-3 pr-12 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none transition-all"
+                className="w-full px-4 py-3 pr-12 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none transition-all"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
@@ -74,7 +78,7 @@ const Login = () => {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-400 hover:text-gray-600 dark:hover:text-slate-200 transition-colors cursor-pointer"
               >
                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
@@ -82,15 +86,15 @@ const Login = () => {
           </div>
           <button
             type="submit"
-            className="w-full bg-brand-500 hover:bg-brand-600 text-white font-semibold py-3 rounded-xl shadow-lg shadow-brand-500/30 transition-all active:scale-[0.98]"
+            className="w-full bg-brand-500 hover:bg-brand-600 text-white font-semibold py-3 rounded-xl shadow-lg shadow-brand-500/30 transition-all active:scale-[0.98] cursor-pointer"
           >
             Sign In
           </button>
         </form>
 
-        <p className="text-center mt-6 text-gray-600">
+        <p className="text-center mt-6 text-gray-600 dark:text-slate-400 text-sm">
           Don't have an account?{' '}
-          <Link to="/register" className="text-brand-600 font-semibold hover:underline">
+          <Link to="/register" className="text-brand-600 dark:text-brand-400 font-semibold hover:underline">
             Sign up
           </Link>
         </p>
@@ -98,7 +102,6 @@ const Login = () => {
     </div>
   );
 };
-
 
 export default Login;
 
