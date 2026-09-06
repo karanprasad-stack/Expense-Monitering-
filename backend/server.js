@@ -48,24 +48,28 @@ app.use(express.json({ limit: '10kb' }));
 // Sanitize data against NoSQL injection
 app.use(mongoSanitize);
 
-// Global rate limiter — generous request limit (5000 in dev, 1000 in prod per 15 minutes)
-const globalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: process.env.NODE_ENV === 'production' ? 1000 : 5000,
-  message: { message: 'Too many requests, please try again later.' },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-app.use('/api', globalLimiter);
+// Global rate limiter — active in production only (2000 requests / 15 min), bypassed in dev
+if (process.env.NODE_ENV === 'production') {
+  const globalLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 2000,
+    message: { message: 'Too many requests, please try again later.' },
+    standardHeaders: true,
+    legacyHeaders: false,
+  });
+  app.use('/api', globalLimiter);
+}
 
-// Strict rate limiter for auth routes — 200 attempts in dev, 20 in prod per 15 minutes
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: process.env.NODE_ENV === 'production' ? 20 : 200,
-  message: { message: 'Too many login attempts, please try again after 15 minutes.' },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
+// Strict rate limiter for auth routes in production (20 attempts / 15 min), bypassed in dev
+const authLimiter = process.env.NODE_ENV === 'production'
+  ? rateLimit({
+      windowMs: 15 * 60 * 1000,
+      max: 20,
+      message: { message: 'Too many login attempts, please try again after 15 minutes.' },
+      standardHeaders: true,
+      legacyHeaders: false,
+    })
+  : (req, res, next) => next();
 
 // Logger — only in development
 if (process.env.NODE_ENV !== 'production') {

@@ -94,17 +94,13 @@ const LendingBorrowing = () => {
     }
   };
 
-  useEffect(() => {
-    fetchData();
-  }, [statusFilter]);
-
-  // Handle Search Debounce
+  // Fetch data on search query or status filter change (with debounce)
   useEffect(() => {
     const timer = setTimeout(() => {
       fetchData();
-    }, 300);
+    }, 250);
     return () => clearTimeout(timer);
-  }, [searchQuery]);
+  }, [searchQuery, statusFilter]);
 
   // Fetch Person History
   const fetchPersonHistory = async (personId) => {
