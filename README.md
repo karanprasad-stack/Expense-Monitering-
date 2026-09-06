@@ -1,88 +1,133 @@
-# 💸 Expense Monitoring & Budget Planning Application
+# 💸 FinTrack — Personal Expense Monitoring, Budget Planning & Udhar Ledger
 
-A premium, full-stack personal finance and budget planning web application. Designed to offer real-time insights into your monthly budgets, categorized expenses, and spending habits with interactive charts and automated budget-limit alerts.
+A modern, full-stack personal finance platform built with React 19, Node.js, Express, and MongoDB. **FinTrack** provides real-time monthly budget tracking, multi-tier expense categorization, interactive charts, automated overspending alerts, an end-to-end **Lending & Borrowing (Udhar)** ledger, and a polished **Dark & Light Mode** theme system.
 
 ---
 
 ## 🌟 Key Features
 
-### 📊 Dynamic Financial Dashboard
-* **High-Level Statistics**: View your Total Budget, Allocated Budget, Total Spent, and Net Savings at a glance.
-* **Smart Budget Alerts**: Get visual alerts when subcategory expenses exceed allocated budgets, showing the exact amount overspent.
-* **Interactive Charting**:
-  * **Category Budget Comparison**: Side-by-side bar charts (via Recharts) showing Allocated vs. Actual spent amounts.
-  * **Subcategory Spending Breakdown**: Interactive pie/donut charts detailing exactly where your money goes.
-* **Recent Transactions**: Quick access list of the latest transactions with automatic tags for category and subcategory.
+### 📊 1. Financial Dashboard
+* **Real-time Overview Cards**: Track **Total Budget**, **Allocated Budget**, **Total Spent**, and **Net Savings** for any month/year.
+* **Smart Overspending Alerts**: Highlights exceeded subcategories with exact overspent amounts (+₹).
+* **Interactive Visual Analytics (Recharts)**:
+  * **Category Budget Comparison**: Side-by-side bar charts comparing allocated budgets vs. actual spending.
+  * **Subcategory Spending Breakdown**: Interactive donut chart detailing spending distribution.
+* **Recent Activity**: Quick snapshot of recent expenses with categorized badges and a dedicated **View All Transactions** modal.
 
-### 📅 Advanced Budget Planning
-* **Monthly Budgets**: Set and update a dedicated total budget limit for any month and year.
-* **Two-Tier Category Management**:
-  * Create, edit, and delete **Parent Categories** (e.g., *Monthly Expenses*, *Investment*).
-  * Build specific **Subcategories** (e.g., *Groceries*, *Dining*, *Gas*) with individual budget allocations.
-* **Allocation Breakdown**: Visual pie chart depicting the allocation of the parent category budget to its subcategories, ensuring you don't over-allocate.
-* **Real-time Utilization Tracker**: See progress indicators (Safe, Warning, Overspent) showing the exact utilization percentage per subcategory.
+### 📅 2. Advanced Budget Planning
+* **Monthly Budgeting**: Define and update overall budget ceilings for any month and year.
+* **Two-Tier Category Hierarchy**:
+  * Organize finances into **Parent Categories** (e.g., *Living Expenses*, *Entertainment*, *Investments*).
+  * Break down parents into **Subcategories** (e.g., *Groceries*, *Electricity*, *Dining*) with dedicated spending limits.
+* **Interactive Subcategory Transactions Panel**: Click any subcategory card or chart slice to view, edit, or delete transactions recorded under that specific subcategory.
+* **Real-Time Utilization Badges**: Dynamic visual indicators (Normal, Warning at 70%, and Overspent alerts) with utilization percentages.
 
-### 🔒 Enterprise-Grade Security & Auth
-* **JWT Authentication**: Secure user registration and login, with token validation handling on request/response interceptors.
-* **CORS Origin Restricting**: Restricts cross-origin requests to trusted origins only.
-* **NoSQL Injection Protection**: Automatic MongoDB query sanitization to prevent database-level attacks.
-* **Multi-Layer Rate Limiting**:
-  * Global rate limiter to protect API routes (100 requests / 15 mins).
-  * Strict auth rate limiter to deter brute-force login attempts (10 attempts / 15 mins).
-* **Security Headers**: Uses Helmet to secure Express headers (XSS, clickjacking protection).
+### 🤝 3. Lending & Borrowing ("Udhar") Management
+* **Independent Debt Ledger**: Track money given to others (lent / repaid) and money received from others (borrowed / returned).
+* **Automated Net Balance & Status Tracking**:
+  * `THEY_OWE_YOU` (Positive Net Balance — Green)
+  * `YOU_OWE_THEM` (Negative Net Balance — Red)
+  * `SETTLED` (Zero Balance — Gray)
+* **Contact Directory**: Manage people with names, phone numbers, and notes.
+* **Per-Person Ledger History**: View full chronological transaction history for each person with edit, delete, and "Settle Up" actions.
+* **Live Search & Status Filtering**: Filter contacts instantly by name or status (`All`, `They Owe Me`, `I Owe Them`, `Settled`).
+
+### 💳 4. Comprehensive Transactions Management
+* **Record Expenses**: Add transactions with date, category, subcategory, payment method (*UPI, Credit Card, Debit Card, Cash, Net Banking*), amount, and notes.
+* **Double-Submit & Idempotency Guard**: Client and server-side idempotency keys (`X-Idempotency-Key`) eliminate duplicate transactions on rapid clicks.
+* **Search & Filter Controls**: Live filtering by search query, parent category, and subcategory.
+* **Edit & Safe Delete**: In-place editing and modal-based delete confirmations that automatically synchronize budget limits.
+
+### 🌓 5. Dark Mode & Light Mode
+* **Instant Theme Switching**: Animated Sun/Moon toggle button in the header.
+* **Theme Persistence**: Preserves user preference in `localStorage` with fallback to OS `prefers-color-scheme`.
+* **Eye-Pleasing Dark Aesthetics**: Tailored high-contrast dark theme with softened matte chart palettes (`#60a5fa`, `#34d399`, `#a78bfa`, `#f472b6`, `#38bdf8`, `#fbbf24`), dark calendar pickers, and glassmorphic cards without visual glare.
+
+### 🔒 6. Security & Data Integrity
+* **JWT Authentication**: Secure user registration and login with token validation interceptors.
+* **NoSQL Injection Defense**: Automated query sanitization via `mongoSanitize` middleware.
+* **Production Rate Limiting**: Multi-tier API rate limiting with strict auth protection against brute-force attacks.
+* **Security Headers**: Helmet integration for XSS, MIME-sniffing, and clickjacking protection.
+* **CORS Whitelisting**: Restricted origin access with local LAN and development environment support.
 
 ---
 
 ## 🛠️ Technology Stack
 
-### Frontend
-* **Core**: React 19, JavaScript (ES6+)
-* **Build Tool**: Vite 8
-* **Routing**: React Router Dom v7
-* **Charts**: Recharts (Pie, Bar, Cell, ResponsiveContainer)
-* **Styling**: Tailwind CSS v4, PostCSS, Autoprefixer
-* **Icons & Animation**: Lucide React, Framer Motion
-* **API Client**: Axios (with custom auth interceptors)
-
-### Backend
-* **Runtime & Framework**: Node.js, Express 5
-* **Database**: MongoDB (Object modeling via Mongoose)
-* **Authentication**: JSON Web Token (JWT), Bcrypt.js
-* **Security**: Helmet, Express-Rate-Limit, Express-Mongo-Sanitize, Cors
-* **Scheduling**: Node-Cron (for recurring checks and maintenance)
-* **Logging**: Morgan (development environment logger)
+| Layer | Technologies |
+| :--- | :--- |
+| **Frontend** | React 19, JavaScript (ES6+), Vite 8, React Router v7 |
+| **Styling & UI** | Tailwind CSS v4, Vanilla CSS Design System, Lucide React, Framer Motion |
+| **Data Visualization** | Recharts (Pie, Bar, Cell, Tooltip, ResponsiveContainer) |
+| **Backend API** | Node.js, Express 5 |
+| **Database** | MongoDB, Mongoose ODM |
+| **Authentication & Security** | JSON Web Token (JWT), Bcrypt.js, Helmet, Express-Rate-Limit, Mongo-Sanitize, CORS |
+| **HTTP Client** | Axios (with request/response interceptors & idempotency headers) |
 
 ---
 
-## 📂 Project Directory Structure
+## 📂 Project Structure
 
 ```text
 Expense Monitoring/
+├── backend/
+│   ├── config/
+│   │   └── db.js                         # MongoDB connection logic
+│   ├── controllers/
+│   │   ├── authController.js             # User register, login & profile
+│   │   ├── budgetController.js           # Budget creation & retrieval
+│   │   ├── categoryController.js         # Categories & subcategories CRUD
+│   │   ├── expenseController.js          # Expense tracking & idempotency
+│   │   ├── dashboardController.js        # Analytics & summary aggregation
+│   │   └── udharController.js            # People & Udhar transactions CRUD
+│   ├── middleware/
+│   │   ├── authMiddleware.js             # JWT bearer verification
+│   │   └── mongoSanitizeMiddleware.js    # NoSQL injection protection
+│   ├── models/
+│   │   ├── User.js                       # User schema & password hashing
+│   │   ├── Budget.js                     # Monthly budget schema
+│   │   ├── Category.js                   # Parent category & subcategory schema
+│   │   ├── Expense.js                    # Expense transaction schema
+│   │   ├── UdharPerson.js                # Udhar contact schema
+│   │   └── UdharTransaction.js           # Udhar transaction schema
+│   ├── routes/
+│   │   ├── authRoutes.js
+│   │   ├── budgetRoutes.js
+│   │   ├── categoryRoutes.js
+│   │   ├── expenseRoutes.js
+│   │   ├── dashboardRoutes.js
+│   │   └── udharRoutes.js
+│   ├── server.js                         # Express server configuration
+│   ├── .env.example
+│   └── package.json
 │
-├── backend/                  # Node.js Express Server
-│   ├── config/               # Database Connection & Configs
-│   ├── controllers/          # Business Logic per route
-│   ├── middleware/           # Auth, Sanitization & Rate Limiters
-│   ├── models/               # MongoDB Schemas (User, Budget, Category, Expense)
-│   ├── routes/               # API Endpoints
-│   ├── server.js             # Express app startup & configuration
-│   ├── .env.example          # Environment Template
-│   └── package.json          # Backend scripts & dependencies
-│
-├── frontend/                 # React SPA Client
+├── frontend/
 │   ├── src/
-│   │   ├── assets/           # Static images, styles & assets
-│   │   ├── components/       # Reusable UI Components
-│   │   ├── context/          # Context API for auth and global state
-│   │   ├── pages/            # Application Pages (Dashboard, BudgetPlanning, Login, etc.)
-│   │   ├── utils/            # Helper utilities, Axios instances
-│   │   ├── main.jsx          # Application entry point
-│   │   └── index.css         # Styling system configuration
-│   ├── vite.config.js        # Vite configurations
-│   ├── tailwind.config.js    # Tailwind layout customizations
-│   └── package.json          # Frontend scripts & dependencies
+│   │   ├── components/
+│   │   │   ├── layout/
+│   │   │   │   ├── Layout.jsx            # Main app shell, header & theme toggle
+│   │   │   │   └── Sidebar.jsx           # Responsive sidebar navigation
+│   │   │   └── WelcomeScreen.jsx         # Animated login greeting
+│   │   ├── context/
+│   │   │   ├── AuthContext.jsx           # Authentication state & actions
+│   │   │   └── ThemeContext.jsx          # Dark/Light mode theme state
+│   │   ├── pages/
+│   │   │   ├── Dashboard.jsx             # Financial summary & analytics
+│   │   │   ├── BudgetPlanning.jsx        # Category budgets & subcategory panel
+│   │   │   ├── Transactions.jsx          # Expense history & form
+│   │   │   ├── LendingBorrowing.jsx      # Udhar contacts & ledger
+│   │   │   ├── Login.jsx                 # User sign in
+│   │   │   └── Register.jsx              # User registration
+│   │   ├── utils/
+│   │   │   └── axios.js                  # Axios instance with auth interceptors
+│   │   ├── App.jsx                       # Routing configuration
+│   │   ├── main.jsx                      # React DOM root & providers
+│   │   └── index.css                     # Tailwind & global theme styling
+│   ├── tailwind.config.js
+│   ├── vite.config.js
+│   └── package.json
 │
-└── README.md                 # Project documentation
+└── README.md
 ```
 
 ---
@@ -90,11 +135,15 @@ Expense Monitoring/
 ## 🚀 Getting Started
 
 ### Prerequisites
-* [Node.js](https://nodejs.org/) (v18.x or higher recommended)
-* [MongoDB](https://www.mongodb.com/) (Local installation or MongoDB Atlas URI)
+* **Node.js** (v18.x or higher)
+* **MongoDB** (Local instance or MongoDB Atlas connection string)
+* **npm** or **yarn**
 
-### Backend Setup
-1. Navigate to the backend directory:
+---
+
+### 1. Backend Setup
+
+1. Open a terminal and navigate to `backend`:
    ```bash
    cd backend
    ```
@@ -102,73 +151,115 @@ Expense Monitoring/
    ```bash
    npm install
    ```
-3. Create a `.env` file from the example:
-   ```bash
-   cp .env.example .env
-   ```
-4. Update the variables in `.env`:
+3. Create a `.env` file in the `backend` folder:
    ```env
    PORT=5000
-   MONGO_URI=mongodb://localhost:27017/budget-app
+   MONGO_URI=your_mongodb_connection_string
    JWT_SECRET=your_super_secret_jwt_key
    CORS_ORIGIN=http://localhost:5173
    NODE_ENV=development
    ```
-5. Start the backend server:
+4. Start the backend server:
    ```bash
    npm start
+   # Or for development with auto-reload:
+   npm run dev
    ```
-   *The server should run on `http://localhost:5000`.*
+   *Backend will run at `http://localhost:5000`.*
 
-### Frontend Setup
-1. Navigate to the frontend directory:
+---
+
+### 2. Frontend Setup
+
+1. In a new terminal, navigate to `frontend`:
    ```bash
-   cd ../frontend
+   cd frontend
    ```
 2. Install dependencies:
    ```bash
    npm install
    ```
-3. Create a `.env` file in the frontend folder:
+3. Create a `.env` file in the `frontend` folder:
    ```env
    VITE_API_URL=http://localhost:5000/api
    ```
-4. Start the frontend application:
+4. Launch the Vite development server:
    ```bash
    npm run dev
    ```
-   *The app should open on `http://localhost:5173`.*
+   *Frontend will open at `http://localhost:5173`.*
 
 ---
 
 ## 📌 API Endpoint Reference
 
-| Endpoint | Method | Description | Auth Required |
-| :--- | :---: | :--- | :---: |
-| `/api/auth/register` | `POST` | Create a new user profile | No |
-| `/api/auth/login` | `POST` | Authenticate user & receive token | No |
-| `/api/budgets` | `GET` | Fetch user budget for specific month/year | Yes |
-| `/api/budgets` | `POST` | Create or update total monthly budget | Yes |
-| `/api/categories` | `GET` | Get all categories and subcategories | Yes |
-| `/api/categories` | `POST` | Add a new parent category | Yes |
-| `/api/categories/:id` | `PUT` | Edit a parent category name | Yes |
-| `/api/categories/:id` | `DELETE` | Delete a category (cascades subcategories & expenses) | Yes |
-| `/api/categories/:id/subcategories` | `POST` | Add subcategory with allocated budget | Yes |
-| `/api/categories/subcategories/:subId` | `PUT` | Update subcategory name/allocation | Yes |
-| `/api/categories/subcategories/:subId` | `DELETE`| Remove a subcategory and its expenses | Yes |
-| `/api/expenses` | `POST` | Record a new expense | Yes |
-| `/api/dashboard` | `GET` | Retrieve analytical dashboard data | Yes |
+### 🔐 Authentication (`/api/auth`)
+| Method | Endpoint | Description | Auth Required |
+| :--- | :--- | :--- | :---: |
+| `POST` | `/api/auth/register` | Register a new user | ❌ |
+| `POST` | `/api/auth/login` | Login and receive JWT | ❌ |
+
+### 📊 Dashboard & Analytics (`/api/dashboard`)
+| Method | Endpoint | Description | Auth Required |
+| :--- | :--- | :--- | :---: |
+| `GET` | `/api/dashboard?month=M&year=YYYY` | Get monthly budget summary, chart metrics & recent expenses | ✅ |
+
+### 💰 Budget Planning (`/api/budgets`)
+| Method | Endpoint | Description | Auth Required |
+| :--- | :--- | :--- | :---: |
+| `GET` | `/api/budgets?month=M&year=YYYY` | Fetch budget for specific month and year | ✅ |
+| `POST` | `/api/budgets` | Set or update monthly budget ceiling | ✅ |
+
+### 🏷️ Categories & Subcategories (`/api/categories`)
+| Method | Endpoint | Description | Auth Required |
+| :--- | :--- | :--- | :---: |
+| `GET` | `/api/categories?budgetId=ID` | Fetch all categories and subcategories | ✅ |
+| `POST` | `/api/categories` | Create a parent category | ✅ |
+| `PUT` | `/api/categories/:id` | Update parent category name | ✅ |
+| `DELETE` | `/api/categories/:id` | Delete parent category and cascade delete children | ✅ |
+| `POST` | `/api/categories/:id/subcategories` | Add a subcategory with allocated budget | ✅ |
+| `PUT` | `/api/categories/subcategories/:subId` | Update subcategory name or allocation | ✅ |
+| `DELETE` | `/api/categories/subcategories/:subId` | Remove subcategory and associated expenses | ✅ |
+
+### 💳 Expense Transactions (`/api/expenses`)
+| Method | Endpoint | Description | Auth Required |
+| :--- | :--- | :--- | :---: |
+| `GET` | `/api/expenses` | Get all expenses (supports `subcategoryId`, `month`, `year` filters) | ✅ |
+| `POST` | `/api/expenses` | Record a new expense (supports `X-Idempotency-Key`) | ✅ |
+| `PUT` | `/api/expenses/:id` | Update an existing expense | ✅ |
+| `DELETE` | `/api/expenses/:id` | Delete an expense and restore budget | ✅ |
+
+### 🤝 Lending & Borrowing / Udhar (`/api/udhar`)
+| Method | Endpoint | Description | Auth Required |
+| :--- | :--- | :--- | :---: |
+| `GET` | `/api/udhar/overview` | Fetch total to receive, total to pay, and net balance | ✅ |
+| `GET` | `/api/udhar/people` | List all contacts (supports `search` & `status` filters) | ✅ |
+| `POST` | `/api/udhar/people` | Add a new contact | ✅ |
+| `PUT` | `/api/udhar/people/:id` | Update contact details | ✅ |
+| `DELETE` | `/api/udhar/people/:id` | Delete contact and cascade remove transactions | ✅ |
+| `GET` | `/api/udhar/people/:id/transactions` | Get chronological transaction history for a person | ✅ |
+| `POST` | `/api/udhar/transactions` | Record a gave/received transaction (supports `X-Idempotency-Key`) | ✅ |
+| `PUT` | `/api/udhar/transactions/:id` | Edit an existing Udhar transaction | ✅ |
+| `DELETE` | `/api/udhar/transactions/:id` | Delete an Udhar transaction | ✅ |
 
 ---
 
-## 🔒 Security Best Practices Implemented
-* **Data Sanitization**: All incoming requests are run through query sanitization middleware that cleanses field names starting with `$` or containing `.` to prevent NoSQL injection.
-* **Express Rate Limiting**: Prevents denial of service (DoS) and automated attacks.
-* **Password Hashing**: User passwords are securely salted and hashed using Bcrypt before being stored in the database.
-* **Scoped Tokens**: JWT tokens are signed with a secret key and set to expire, preventing permanent session compromise.
+## 🧪 Testing & Validation
+
+The project includes an end-to-end integration test suite verifying:
+1. Contact lifecycle & ledger transactions
+2. Automated balance calculation & status transitions (`THEY_OWE_YOU`, `YOU_OWE_THEM`, `SETTLED`)
+3. Double-submission idempotency protection
+4. Search & status filtering accuracy
+5. Overview statistic mathematical totals
+
+To run tests:
+```bash
+node scratch/test_udhar.js
+```
 
 ---
 
 ## 📄 License
 
-This project is licensed under the ISC License. Feel free to clone, modify, and distribute as desired.
+This project is licensed under the **ISC License**. Feel free to use, modify, and distribute.
