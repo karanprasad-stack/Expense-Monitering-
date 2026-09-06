@@ -874,9 +874,28 @@ const BudgetPlanning = () => {
                                                   ].filter(item => item.value > 0);
                                               return pieData.map(item => {
                                                 if (item.name === 'Spent') {
-                                                  return <Cell key="spent" fill={isOverspent ? '#ef4444' : isWarning ? '#f59e0b' : '#10b981'} />;
+                                                  const spentFill = isOverspent 
+                                                    ? (isDark ? '#f87171' : '#ef4444') 
+                                                    : isWarning 
+                                                    ? (isDark ? '#fbbf24' : '#f59e0b') 
+                                                    : (isDark ? '#34d399' : '#10b981');
+                                                  return (
+                                                    <Cell
+                                                      key="spent"
+                                                      fill={spentFill}
+                                                      stroke={isDark ? '#1e293b' : '#ffffff'}
+                                                      strokeWidth={isDark ? 1.5 : 1}
+                                                    />
+                                                  );
                                                 }
-                                                return <Cell key="remaining" fill={isDark ? '#334155' : '#d1d5db'} />;
+                                                return (
+                                                  <Cell
+                                                    key="remaining"
+                                                    fill={isDark ? '#334155' : '#d1d5db'}
+                                                    stroke={isDark ? '#1e293b' : '#ffffff'}
+                                                    strokeWidth={isDark ? 1.5 : 1}
+                                                  />
+                                                );
                                               });
                                             })()}
                                           </Pie>
@@ -917,8 +936,8 @@ const BudgetPlanning = () => {
                                     <span
                                       className="text-[10px] font-extrabold px-1.5 py-0.5 rounded-md"
                                       style={{
-                                        color: isOverspent ? (isDark ? '#f87171' : '#ef4444') : isWarning ? (isDark ? '#fbbf24' : '#d97706') : (isDark ? '#4ade80' : '#059669'),
-                                        backgroundColor: isOverspent ? (isDark ? 'rgba(239, 68, 68, 0.2)' : '#fef2f2') : isWarning ? (isDark ? 'rgba(245, 158, 11, 0.2)' : '#fffbeb') : (isDark ? 'rgba(16, 185, 129, 0.2)' : '#ecfdf5')
+                                        color: isOverspent ? (isDark ? '#f87171' : '#ef4444') : isWarning ? (isDark ? '#fbbf24' : '#d97706') : (isDark ? '#34d399' : '#059669'),
+                                        backgroundColor: isOverspent ? (isDark ? 'rgba(248, 113, 113, 0.15)' : '#fef2f2') : isWarning ? (isDark ? 'rgba(251, 191, 36, 0.15)' : '#fffbeb') : (isDark ? 'rgba(52, 211, 153, 0.15)' : '#ecfdf5')
                                       }}
                                     >
                                       {actualPercent.toFixed(0)}% Utilized
@@ -981,11 +1000,20 @@ const BudgetPlanning = () => {
                                     }] : [])
                                   ].filter(item => item.value > 0);
 
-                                  const COLORS = ['#3b82f6', '#10b981', '#8b5cf6', '#ec4899', '#06b6d4', '#eab308'];
+                                  const LIGHT_COLORS = ['#3b82f6', '#10b981', '#8b5cf6', '#ec4899', '#06b6d4', '#eab308'];
+                                  const DARK_COLORS = ['#60a5fa', '#34d399', '#a78bfa', '#f472b6', '#38bdf8', '#fbbf24'];
+                                  const COLORS = isDark ? DARK_COLORS : LIGHT_COLORS;
 
                                   return chartData.map((item, idx) => {
                                     if (item.isOverspent) {
-                                      return <Cell key="cell-overspent" fill="#ef4444" />;
+                                      return (
+                                        <Cell
+                                          key="cell-overspent"
+                                          fill={isDark ? '#f87171' : '#ef4444'}
+                                          stroke={isDark ? '#0f172a' : '#ffffff'}
+                                          strokeWidth={isDark ? 2 : 1}
+                                        />
+                                      );
                                     }
                                     const subIdx = cat.subcategories.findIndex(s => s.name === item.name);
                                     const color = COLORS[subIdx !== -1 ? subIdx % COLORS.length : idx % COLORS.length];
@@ -995,8 +1023,8 @@ const BudgetPlanning = () => {
                                       <Cell
                                         key={`cell-${idx}`}
                                         fill={color}
-                                        stroke={isSelected ? '#4f46e5' : isDark ? '#0f172a' : '#ffffff'}
-                                        strokeWidth={isSelected ? 3 : 1}
+                                        stroke={isSelected ? (isDark ? '#818cf8' : '#4f46e5') : isDark ? '#0f172a' : '#ffffff'}
+                                        strokeWidth={isSelected ? 3 : isDark ? 2 : 1}
                                         className="cursor-pointer hover:opacity-85 transition-all"
                                       />
                                     );
@@ -1030,7 +1058,9 @@ const BudgetPlanning = () => {
 
                           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                             {cat.subcategories.map((sub, idx) => {
-                              const COLORS = ['#3b82f6', '#10b981', '#8b5cf6', '#ec4899', '#06b6d4', '#eab308'];
+                              const LIGHT_COLORS = ['#3b82f6', '#10b981', '#8b5cf6', '#ec4899', '#06b6d4', '#eab308'];
+                              const DARK_COLORS = ['#60a5fa', '#34d399', '#a78bfa', '#f472b6', '#38bdf8', '#fbbf24'];
+                              const COLORS = isDark ? DARK_COLORS : LIGHT_COLORS;
                               const color = COLORS[idx % COLORS.length];
                               const isSelected = selectedSubcategory?._id === sub._id;
 

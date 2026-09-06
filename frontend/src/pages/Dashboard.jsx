@@ -48,7 +48,9 @@ const Dashboard = () => {
     }
   };
 
-  const COLORS = ['#3b82f6', '#10b981', '#8b5cf6', '#ec4899', '#06b6d4', '#eab308'];
+  const LIGHT_COLORS = ['#3b82f6', '#10b981', '#8b5cf6', '#ec4899', '#06b6d4', '#eab308'];
+  const DARK_COLORS = ['#60a5fa', '#34d399', '#a78bfa', '#f472b6', '#38bdf8', '#fbbf24'];
+  const COLORS = isDark ? DARK_COLORS : LIGHT_COLORS;
 
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(value || 0);
@@ -211,8 +213,8 @@ const Dashboard = () => {
                   cursor={{ fill: isDark ? 'rgba(255, 255, 255, 0.05)' : '#f3f4f6' }} 
                 />
                 <Legend iconType="circle" wrapperStyle={{ color: isDark ? '#cbd5e1' : '#4b5563' }} />
-                <Bar dataKey="allocated" name="Allocated Budget" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="spent" name="Actual Spent" fill="#10b981" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="allocated" name="Allocated Budget" fill={isDark ? '#60a5fa' : '#3b82f6'} radius={[4, 4, 0, 0]} />
+                <Bar dataKey="spent" name="Actual Spent" fill={isDark ? '#34d399' : '#10b981'} radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -236,7 +238,12 @@ const Dashboard = () => {
                       dataKey="value"
                     >
                       {data.subcategorySpending.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={COLORS[index % COLORS.length]}
+                          stroke={isDark ? '#0f172a' : '#ffffff'}
+                          strokeWidth={isDark ? 2 : 1}
+                        />
                       ))}
                     </Pie>
                     <Tooltip 
