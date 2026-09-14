@@ -5,10 +5,13 @@ const {
   getExpenses,
   createExpense,
   updateExpense,
-  deleteExpense
+  deleteExpense,
+  getSpendingAnalysis
 } = require('../controllers/expenseController');
 const { protect } = require('../middleware/authMiddleware');
 const { validate } = require('../middleware/validateMiddleware');
+
+router.get('/analysis', protect, getSpendingAnalysis);
 
 router.route('/')
   .get(

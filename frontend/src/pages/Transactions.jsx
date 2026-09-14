@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import api from '../utils/axios';
-import { Pencil, Trash2, Search, Filter, PlusCircle, ArrowUpDown, X, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Pencil, Trash2, Search, Filter, PlusCircle, ArrowUpDown, X, Loader2, AlertCircle, CheckCircle2, Calendar } from 'lucide-react';
 
 const Transactions = () => {
+  const editFormRef = useRef(null);
   const [categories, setCategories] = useState([]);
   const [expenses, setExpenses] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -170,8 +171,12 @@ const Transactions = () => {
     setWarning('');
     setErrorMessage('');
 
-    // Smooth scroll to form
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Smooth scroll to existing Edit Transaction section
+    setTimeout(() => {
+      if (editFormRef.current) {
+        editFormRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 50);
   };
 
   const handleCancelEdit = () => {
@@ -232,6 +237,70 @@ const Transactions = () => {
 
   const totalFilteredAmount = filteredExpenses.reduce((acc, curr) => acc + (curr.amount || 0), 0);
 
+  // Helper to extract calendar date key (YYYY-MM-DD)
+  const getDateGroupKey = (dateVal) => {
+    const d = new Date(dateVal);
+    if (isNaN(d.getTime())) return 'unknown';
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  // Helper to format date header label (TODAY / YESTERDAY / Date)
+  const getDateGroupLabel = (dateVal) => {
+    const d = new Date(dateVal);
+    if (isNaN(d.getTime())) return 'UNKNOWN DATE';
+
+    const today = new Date();
+    const isToday = (
+      d.getDate() === today.getDate() &&
+      d.getMonth() === today.getMonth() &&
+      d.getFullYear() === today.getFullYear()
+    );
+
+    const yesterday = new Date();
+    yesterday.setDate(today.getDate() - 1);
+    const isYesterday = (
+      d.getDate() === yesterday.getDate() &&
+      d.getMonth() === yesterday.getMonth() &&
+      d.getFullYear() === yesterday.getFullYear()
+    );
+
+    const formattedDate = d.toLocaleDateString('en-IN', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    }).toUpperCase();
+
+    if (isToday) {
+      return `TODAY · ${formattedDate}`;
+    }
+    if (isYesterday) {
+      return `YESTERDAY · ${formattedDate}`;
+    }
+    return formattedDate;
+  };
+
+  // Group filtered expenses by date, preserving existing sorting order
+  const expenseGroups = [];
+  const groupMap = new Map();
+
+  filteredExpenses.forEach((exp) => {
+    const key = getDateGroupKey(exp.date);
+    if (!groupMap.has(key)) {
+      const group = {
+        key,
+        date: exp.date,
+        label: getDateGroupLabel(exp.date),
+        items: []
+      };
+      groupMap.set(key, group);
+      expenseGroups.push(group);
+    }
+    groupMap.get(key).items.push(exp);
+  });
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-[400px] text-gray-500 dark:text-slate-400 font-medium">
@@ -289,10 +358,12 @@ const Transactions = () => {
       )}
 
       {/* Expense Form (Add / Edit) */}
-      <div className={`p-6 rounded-2xl shadow-sm border transition-all ${
+      <div 
+        ref={editFormRef}
+        className={`p-6 rounded-2xl shadow-sm border transition-all scroll-mt-4 sm:scroll-mt-6 ${
         editingExpenseId 
           ? 'bg-indigo-50/40 dark:bg-indigo-950/30 border-indigo-200 dark:border-indigo-800 ring-2 ring-indigo-500/20' 
-          : 'bg-white dark:bg-slate-900 border-gray-100 dark:border-slate-800'
+          : 'bg-white dark:bg-slate-900 border-gray-200/80 dark:border-slate-800'
       }`}>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-2">
@@ -313,7 +384,7 @@ const Transactions = () => {
             <button
               type="button"
               onClick={handleCancelEdit}
-              className="text-xs text-gray-500 dark:text-slate-300 hover:text-gray-700 dark:hover:text-slate-100 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 px-3 py-1.5 rounded-lg font-semibold transition-all hover:bg-gray-50 dark:hover:bg-slate-700 cursor-pointer"
+              className="text-xs text-gray-600 dark:text-slate-300 hover:text-gray-800 dark:hover:text-slate-100 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 px-3 py-1.5 rounded-lg font-semibold transition-all hover:bg-gray-50 dark:hover:bg-slate-700 cursor-pointer shadow-2xs"
             >
               Cancel Edit
             </button>
@@ -323,12 +394,12 @@ const Transactions = () => {
         <form onSubmit={handleFormSubmit} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {/* Date */}
           <div>
-            <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1">Date</label>
+            <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Date</label>
             <input
               type="date"
               required
               disabled={isSubmitting}
-              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 text-sm"
+              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500/60 focus:border-brand-500/60 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 text-sm shadow-2xs transition-all"
               value={date}
               onChange={(e) => setDate(e.target.value)}
             />
@@ -336,11 +407,11 @@ const Transactions = () => {
 
           {/* Category */}
           <div>
-            <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1">Category</label>
+            <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Category</label>
             <select
               required
               disabled={isSubmitting}
-              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 text-sm"
+              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500/60 focus:border-brand-500/60 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 text-sm shadow-2xs transition-all"
               value={categoryId}
               onChange={(e) => {
                 setCategoryId(e.target.value);
@@ -354,11 +425,11 @@ const Transactions = () => {
 
           {/* Subcategory */}
           <div>
-            <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1">Subcategory</label>
+            <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Subcategory</label>
             <select
               required
               disabled={!categoryId || isSubmitting}
-              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 text-sm disabled:bg-gray-100 dark:disabled:bg-slate-800/50 disabled:text-gray-400 dark:disabled:text-slate-500"
+              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500/60 focus:border-brand-500/60 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 text-sm disabled:bg-gray-100 dark:disabled:bg-slate-800/50 disabled:text-gray-400 dark:disabled:text-slate-500 shadow-2xs transition-all"
               value={subcategoryId}
               onChange={(e) => setSubcategoryId(e.target.value)}
             >
@@ -369,7 +440,7 @@ const Transactions = () => {
 
           {/* Amount */}
           <div>
-            <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1">Amount (₹)</label>
+            <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Amount (₹)</label>
             <input
               type="number"
               step="0.01"
@@ -377,7 +448,7 @@ const Transactions = () => {
               placeholder="e.g. 150"
               required
               disabled={isSubmitting}
-              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 text-sm font-semibold placeholder-gray-400 dark:placeholder-slate-500"
+              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500/60 focus:border-brand-500/60 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 text-sm font-semibold placeholder-gray-400 dark:placeholder-slate-400 shadow-2xs transition-all"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
             />
@@ -385,10 +456,10 @@ const Transactions = () => {
 
           {/* Payment Method */}
           <div>
-            <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1">Payment Method</label>
+            <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Payment Method</label>
             <select
               disabled={isSubmitting}
-              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 text-sm"
+              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500/60 focus:border-brand-500/60 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 text-sm shadow-2xs transition-all"
               value={paymentMethod}
               onChange={(e) => setPaymentMethod(e.target.value)}
             >
@@ -403,12 +474,12 @@ const Transactions = () => {
 
           {/* Description */}
           <div className="sm:col-span-2 md:col-span-1">
-            <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1">Note / Description</label>
+            <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Note / Description</label>
             <input
               type="text"
               placeholder="e.g. Groceries from Supermarket"
               disabled={isSubmitting}
-              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 text-sm placeholder-gray-400 dark:placeholder-slate-500"
+              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500/60 focus:border-brand-500/60 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 text-sm placeholder-gray-400 dark:placeholder-slate-400 shadow-2xs transition-all"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
             />
@@ -442,7 +513,7 @@ const Transactions = () => {
                 type="button"
                 onClick={handleCancelEdit}
                 disabled={isSubmitting}
-                className="w-full sm:w-auto px-6 py-3 bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-700 dark:text-slate-200 rounded-xl font-semibold transition-all cursor-pointer"
+                className="w-full sm:w-auto px-6 py-3 bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-700 dark:text-slate-200 border border-gray-200 dark:border-slate-700 rounded-xl font-semibold transition-all cursor-pointer"
               >
                 Cancel
               </button>
@@ -452,9 +523,9 @@ const Transactions = () => {
       </div>
 
       {/* Transactions History Section */}
-      <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 space-y-4">
+      <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-gray-200/80 dark:border-slate-800 space-y-4">
         {/* Title and Filters */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-gray-100 dark:border-slate-800">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-gray-200/80 dark:border-slate-800">
           <div>
             <h3 className="text-lg font-bold text-gray-800 dark:text-slate-100">Transaction History</h3>
             <p className="text-xs text-gray-500 dark:text-slate-400">
@@ -466,13 +537,13 @@ const Transactions = () => {
           <div className="flex flex-wrap items-center gap-2.5">
             {/* Search Input */}
             <div className="relative min-w-[180px] flex-1 sm:flex-initial">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-slate-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-slate-400 pointer-events-none" />
               <input
                 type="text"
                 placeholder="Search..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-9 pr-4 py-1.5 rounded-lg border border-gray-200 dark:border-slate-700 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500 bg-gray-50 dark:bg-slate-800 text-gray-800 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500"
+                className="w-full pl-9 pr-4 py-2 rounded-xl border border-gray-200 dark:border-slate-700 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500/60 focus:border-brand-500/60 bg-gray-50 dark:bg-slate-800 text-gray-800 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-400 shadow-2xs transition-all"
               />
             </div>
 
@@ -483,7 +554,7 @@ const Transactions = () => {
                 setSelectedCategoryFilter(e.target.value);
                 setSelectedSubcategoryFilter('');
               }}
-              className="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-slate-700 text-xs bg-gray-50 dark:bg-slate-800 text-gray-700 dark:text-slate-200"
+              className="px-3.5 py-2 rounded-xl border border-gray-200 dark:border-slate-700 text-xs bg-gray-50 dark:bg-slate-800 text-gray-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500/60 shadow-2xs transition-all"
             >
               <option value="">All Categories</option>
               {categories.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
@@ -494,7 +565,7 @@ const Transactions = () => {
               <select
                 value={selectedSubcategoryFilter}
                 onChange={(e) => setSelectedSubcategoryFilter(e.target.value)}
-                className="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-slate-700 text-xs bg-gray-50 dark:bg-slate-800 text-gray-700 dark:text-slate-200"
+                className="px-3.5 py-2 rounded-xl border border-gray-200 dark:border-slate-700 text-xs bg-gray-50 dark:bg-slate-800 text-gray-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500/60 shadow-2xs transition-all"
               >
                 <option value="">All Subcategories</option>
                 {categories.find(c => c._id === selectedCategoryFilter)?.subcategories?.map(s => (
@@ -510,7 +581,7 @@ const Transactions = () => {
                   setSelectedCategoryFilter('');
                   setSelectedSubcategoryFilter('');
                 }}
-                className="p-1.5 text-xs text-gray-400 dark:text-slate-400 hover:text-gray-600 dark:hover:text-slate-200 bg-gray-100 dark:bg-slate-800 rounded-lg flex items-center gap-1 font-semibold cursor-pointer"
+                className="px-3 py-2 text-xs text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200 bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 border border-gray-200 dark:border-slate-700 rounded-xl flex items-center gap-1 font-semibold cursor-pointer transition-all shadow-2xs"
                 title="Clear Filters"
               >
                 <X className="h-3.5 w-3.5" />
@@ -520,93 +591,118 @@ const Transactions = () => {
           </div>
         </div>
 
-        {/* Transactions Table / Responsive List */}
-        {filteredExpenses.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead>
-                <tr className="text-[11px] font-bold text-gray-400 dark:text-slate-400 uppercase tracking-wider border-b border-gray-100 dark:border-slate-800">
-                  <th className="pb-3 pr-4">Date</th>
-                  <th className="pb-3 pr-4">Description</th>
-                  <th className="pb-3 pr-4">Category / Subcategory</th>
-                  <th className="pb-3 pr-4">Method</th>
-                  <th className="pb-3 pr-4 text-right">Amount</th>
-                  <th className="pb-3 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50 dark:divide-slate-800/80">
-                {filteredExpenses.map((exp) => {
-                  const catName = typeof exp.categoryId === 'object' && exp.categoryId !== null ? exp.categoryId.name : 'Unknown';
-                  const subName = typeof exp.subcategoryId === 'object' && exp.subcategoryId !== null ? exp.subcategoryId.name : 'Unknown';
-                  const isCurrentEditing = editingExpenseId === exp._id;
+        {/* Transactions Table / Responsive List Grouped by Date */}
+        {expenseGroups.length > 0 ? (
+          <div className="max-h-[clamp(340px,55dvh,520px)] overflow-y-auto md:max-h-none md:overflow-y-visible space-y-4">
+            {expenseGroups.map((group) => (
+              <div
+                key={group.key}
+                className="bg-gray-50/80 dark:bg-slate-800/50 rounded-2xl border border-gray-200/80 dark:border-slate-700/60 p-3.5 sm:p-4 shadow-xs space-y-2.5 transition-colors"
+              >
+                {/* Date Group Header */}
+                <div className="sticky top-0 bg-gray-100/90 dark:bg-slate-800/95 backdrop-blur-xs py-2 px-3 -mx-1.5 sm:-mx-2 rounded-xl z-10 flex items-center justify-between border-b border-gray-200/70 dark:border-slate-700/60 mb-1">
+                  <div className="flex items-center space-x-2">
+                    <Calendar className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                    <span className="text-xs font-bold text-gray-800 dark:text-slate-200 tracking-wider uppercase">
+                      {group.label}
+                    </span>
+                  </div>
+                  <span className="text-[11px] font-semibold text-gray-500 dark:text-slate-400 bg-gray-200/70 dark:bg-slate-700/60 px-2 py-0.5 rounded-full">
+                    {group.items.length} {group.items.length === 1 ? 'transaction' : 'transactions'}
+                  </span>
+                </div>
 
-                  return (
-                    <tr
-                      key={exp._id}
-                      className={`hover:bg-gray-50/80 dark:hover:bg-slate-800/50 transition-colors ${
-                        isCurrentEditing ? 'bg-indigo-50/50 dark:bg-indigo-950/30 font-medium' : ''
-                      }`}
-                    >
-                      {/* Date */}
-                      <td className="py-3.5 pr-4 text-xs text-gray-500 dark:text-slate-400 whitespace-nowrap">
-                        {new Date(exp.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
-                      </td>
+                {/* Table for this date group */}
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-sm">
+                    <thead>
+                      <tr className="text-[11px] font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider border-b border-gray-200 dark:border-slate-700/70 bg-gray-100/60 dark:bg-slate-900/40">
+                        <th className="py-2.5 px-3">Date</th>
+                        <th className="py-2.5 pr-3">Description</th>
+                        <th className="py-2.5 pr-3">Category / Subcategory</th>
+                        <th className="py-2.5 pr-3">Method</th>
+                        <th className="py-2.5 pr-3 text-right">Amount</th>
+                        <th className="py-2.5 pr-3 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100 dark:divide-slate-700/40">
+                      {group.items.map((exp) => {
+                        const catName = typeof exp.categoryId === 'object' && exp.categoryId !== null ? exp.categoryId.name : 'Unknown';
+                        const subName = typeof exp.subcategoryId === 'object' && exp.subcategoryId !== null ? exp.subcategoryId.name : 'Unknown';
+                        const isCurrentEditing = editingExpenseId === exp._id;
 
-                      {/* Description */}
-                      <td className="py-3.5 pr-4">
-                        <span className="font-semibold text-gray-800 dark:text-slate-100 block truncate max-w-[200px]">{exp.description || 'General'}</span>
-                      </td>
-
-                      {/* Category & Subcategory tags */}
-                      <td className="py-3.5 pr-4">
-                        <div className="flex flex-wrap items-center gap-1.5">
-                          <span className="bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded-md font-bold text-[10px] uppercase tracking-wide">
-                            {catName}
-                          </span>
-                          <span className="bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-slate-300 px-2 py-0.5 rounded-md font-bold text-[10px] uppercase tracking-wide">
-                            {subName}
-                          </span>
-                        </div>
-                      </td>
-
-                      {/* Payment Method */}
-                      <td className="py-3.5 pr-4 text-xs text-gray-500 dark:text-slate-400 whitespace-nowrap">
-                        <span className="text-[11px] bg-gray-50 dark:bg-slate-800 text-gray-600 dark:text-slate-300 border border-gray-200/60 dark:border-slate-700 px-2 py-0.5 rounded-full font-medium">
-                          {exp.paymentMethod || 'UPI'}
-                        </span>
-                      </td>
-
-                      {/* Amount */}
-                      <td className="py-3.5 pr-4 text-right whitespace-nowrap font-extrabold text-red-600 dark:text-red-400">
-                        - ₹{exp.amount.toLocaleString('en-IN')}
-                      </td>
-
-                      {/* Actions (Edit & Delete) */}
-                      <td className="py-3.5 text-right whitespace-nowrap">
-                        <div className="flex items-center justify-end space-x-1.5">
-                          <button
-                            onClick={() => handleStartEdit(exp)}
-                            className="p-1.5 rounded-lg border border-gray-200 dark:border-slate-700 text-gray-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-200 dark:hover:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 transition-all font-semibold cursor-pointer"
-                            title="Edit Transaction"
-                            aria-label="Edit transaction"
+                        return (
+                          <tr
+                            key={exp._id}
+                            className={`hover:bg-slate-100/50 dark:hover:bg-[#1e293b]/70 transition-colors duration-150 ${
+                              isCurrentEditing ? 'bg-indigo-50/60 dark:bg-indigo-950/40 font-medium' : ''
+                            }`}
                           >
-                            <Pencil className="h-3.5 w-3.5" />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteClick(exp)}
-                            className="p-1.5 rounded-lg border border-gray-200 dark:border-slate-700 text-gray-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:border-red-200 dark:hover:border-red-800 hover:bg-red-50 dark:hover:bg-red-950/50 transition-all font-semibold cursor-pointer"
-                            title="Delete Transaction"
-                            aria-label="Delete transaction"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                            {/* Date */}
+                            <td className="py-3 px-3 text-xs text-gray-500 dark:text-slate-400 whitespace-nowrap">
+                              {new Date(exp.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+                            </td>
+
+                            {/* Description */}
+                            <td className="py-3 pr-3">
+                              <span className="font-semibold text-gray-800 dark:text-slate-100 block truncate max-w-[200px]" title={exp.description || 'General'}>
+                                {exp.description || 'General'}
+                              </span>
+                            </td>
+
+                            {/* Category & Subcategory tags */}
+                            <td className="py-3 pr-3">
+                              <div className="flex flex-wrap items-center gap-1.5">
+                                <span className="bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded-md font-bold text-[10px] uppercase tracking-wide border border-blue-100 dark:border-blue-900/40">
+                                  {catName}
+                                </span>
+                                <span className="bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-slate-300 px-2 py-0.5 rounded-md font-bold text-[10px] uppercase tracking-wide border border-gray-200/50 dark:border-slate-600/50">
+                                  {subName}
+                                </span>
+                              </div>
+                            </td>
+
+                            {/* Payment Method */}
+                            <td className="py-3 pr-3 text-xs text-gray-500 dark:text-slate-400 whitespace-nowrap">
+                              <span className="text-[11px] bg-white dark:bg-slate-800 text-gray-600 dark:text-slate-300 border border-gray-200 dark:border-slate-700 px-2 py-0.5 rounded-full font-medium">
+                                {exp.paymentMethod || 'UPI'}
+                              </span>
+                            </td>
+
+                            {/* Amount */}
+                            <td className="py-3 pr-3 text-right whitespace-nowrap font-extrabold text-red-600 dark:text-red-400">
+                              - ₹{exp.amount.toLocaleString('en-IN')}
+                            </td>
+
+                            {/* Actions (Edit & Delete) */}
+                            <td className="py-3 pr-3 text-right whitespace-nowrap">
+                              <div className="flex items-center justify-end space-x-1.5">
+                                <button
+                                  onClick={() => handleStartEdit(exp)}
+                                  className="p-1.5 rounded-lg border border-gray-200 dark:border-slate-700 text-gray-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-200 dark:hover:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 transition-all font-semibold cursor-pointer"
+                                  title="Edit Transaction"
+                                  aria-label="Edit transaction"
+                                >
+                                  <Pencil className="h-3.5 w-3.5" />
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteClick(exp)}
+                                  className="p-1.5 rounded-lg border border-gray-200 dark:border-slate-700 text-gray-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:border-red-200 dark:hover:border-red-800 hover:bg-red-50 dark:hover:bg-red-950/50 transition-all font-semibold cursor-pointer"
+                                  title="Delete Transaction"
+                                  aria-label="Delete transaction"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            ))}
           </div>
         ) : (
           <div className="py-12 flex flex-col items-center justify-center text-gray-400 dark:text-slate-500">
@@ -631,7 +727,7 @@ const Transactions = () => {
       {/* Delete Confirmation Modal */}
       {deleteModal.isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/80 backdrop-blur-sm transition-opacity">
-          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 max-w-sm w-full shadow-2xl border border-gray-100 dark:border-slate-800 transform scale-100 transition-all duration-200">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 max-w-sm w-full shadow-2xl border border-gray-200/80 dark:border-slate-800 transform scale-100 transition-all duration-200">
             <div className="flex flex-col items-center text-center space-y-4 mb-6">
               <div className="p-4 bg-red-50 dark:bg-red-950/60 text-red-500 dark:text-red-400 rounded-2xl">
                 <Trash2 className="h-7 w-7" />
@@ -649,7 +745,7 @@ const Transactions = () => {
             <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={() => setDeleteModal({ isOpen: false, id: null, description: '', amount: 0 })}
-                className="w-full py-2.5 bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300 rounded-xl hover:bg-gray-200 dark:hover:bg-slate-700 text-sm font-semibold transition-all cursor-pointer"
+                className="w-full py-2.5 bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-300 rounded-xl hover:bg-gray-200 dark:hover:bg-slate-700 text-sm font-semibold transition-all cursor-pointer"
               >
                 Cancel
               </button>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import api from '../utils/axios';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import {
@@ -12,7 +12,8 @@ import {
   Loader2,
   Calendar,
   Layers,
-  Sparkles
+  Sparkles,
+  Copy
 } from 'lucide-react';
 import { ThemeContext } from '../context/ThemeContext';
 
@@ -46,10 +47,13 @@ const BudgetPlanning = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
-  // Subcategory Transactions Panel State
+  // Subcategory Transactions Panel State & Auto-scroll / Highlight
   const [selectedSubcategory, setSelectedSubcategory] = useState(null);
   const [subcategoryTransactions, setSubcategoryTransactions] = useState([]);
   const [loadingTransactions, setLoadingTransactions] = useState(false);
+  const transactionsSectionRef = useRef(null);
+  const [isHighlighted, setIsHighlighted] = useState(false);
+  const [scrollTrigger, setScrollTrigger] = useState(0);
 
   // Edit Transaction Modal State
   const [editTxModal, setEditTxModal] = useState({
@@ -63,6 +67,19 @@ const BudgetPlanning = () => {
     paymentMethod: 'UPI'
   });
   const [isUpdatingTx, setIsUpdatingTx] = useState(false);
+
+  // Copy Budget Modal State
+  const [copyModal, setCopyModal] = useState({
+    isOpen: false,
+    loadingList: false,
+    availableBudgets: [],
+    selectedSource: null,
+    previewData: null,
+    loadingPreview: false,
+    mode: 'replace',
+    isCopying: false,
+    error: ''
+  });
 
   useEffect(() => {
     fetchBudgetAndCategories();
@@ -105,9 +122,14 @@ const BudgetPlanning = () => {
     }
   };
 
-  const handleSelectSubcategory = (sub, cat) => {
+  const handleSelectSubcategory = (sub, cat, forceScroll = false) => {
     if (selectedSubcategory?._id === sub._id) {
-      // Toggle off if already selected
+      if (forceScroll) {
+        // Re-trigger auto-scroll and highlight without closing
+        setScrollTrigger(prev => prev + 1);
+        return;
+      }
+      // Toggle off if clicked to close
       setSelectedSubcategory(null);
       setSubcategoryTransactions([]);
       return;
@@ -118,8 +140,29 @@ const BudgetPlanning = () => {
       categoryId: cat ? cat._id : sub.categoryId
     };
     setSelectedSubcategory(fullSub);
+    setScrollTrigger(prev => prev + 1);
     fetchSubcategoryTransactions(sub._id);
   };
+
+  // Auto-scroll to selected subcategory transactions section with subtle highlight
+  useEffect(() => {
+    if (selectedSubcategory && scrollTrigger > 0) {
+      const scrollTimer = setTimeout(() => {
+        if (transactionsSectionRef.current) {
+          transactionsSectionRef.current.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+          setIsHighlighted(true);
+          const highlightTimer = setTimeout(() => {
+            setIsHighlighted(false);
+          }, 1800);
+          return () => clearTimeout(highlightTimer);
+        }
+      }, 60);
+      return () => clearTimeout(scrollTimer);
+    }
+  }, [selectedSubcategory?._id, scrollTrigger]);
 
   const showError = (msg) => {
     setErrorMessage(msg);
@@ -129,6 +172,110 @@ const BudgetPlanning = () => {
   const showSuccess = (msg) => {
     setSuccessMessage(msg);
     setTimeout(() => setSuccessMessage(''), 4000);
+  };
+
+  const handleOpenCopyModal = async () => {
+    setCopyModal({
+      isOpen: true,
+      loadingList: true,
+      availableBudgets: [],
+      selectedSource: null,
+      previewData: null,
+      loadingPreview: false,
+      mode: 'replace',
+      isCopying: false,
+      error: ''
+    });
+
+    try {
+      const res = await api.get('/budgets/all');
+      const others = (res.data || []).filter(b => !(b.month === month && b.year === year));
+      
+      if (others.length > 0) {
+        const first = others[0];
+        setCopyModal(prev => ({
+          ...prev,
+          loadingList: false,
+          availableBudgets: others,
+          selectedSource: { month: first.month, year: first.year }
+        }));
+        fetchCopyPreview(first.month, first.year);
+      } else {
+        setCopyModal(prev => ({
+          ...prev,
+          loadingList: false,
+          availableBudgets: []
+        }));
+      }
+    } catch (err) {
+      console.error('Error fetching budgets list:', err);
+      setCopyModal(prev => ({
+        ...prev,
+        loadingList: false,
+        error: 'Failed to load existing budgets'
+      }));
+    }
+  };
+
+  const fetchCopyPreview = async (sMonth, sYear) => {
+    try {
+      setCopyModal(prev => ({ ...prev, loadingPreview: true, error: '' }));
+      const bRes = await api.get(`/budgets?month=${sMonth}&year=${sYear}`);
+      const cRes = await api.get(`/categories?budgetId=${bRes.data._id}`);
+      setCopyModal(prev => ({
+        ...prev,
+        loadingPreview: false,
+        previewData: {
+          budget: bRes.data,
+          categories: cRes.data || []
+        }
+      }));
+    } catch (err) {
+      console.error('Error fetching copy preview:', err);
+      setCopyModal(prev => ({
+        ...prev,
+        loadingPreview: false,
+        previewData: null,
+        error: 'Failed to load preview for the selected month'
+      }));
+    }
+  };
+
+  const handleSelectSource = (e) => {
+    const val = e.target.value;
+    if (!val) return;
+    const [sMonth, sYear] = val.split('-').map(Number);
+    setCopyModal(prev => ({
+      ...prev,
+      selectedSource: { month: sMonth, year: sYear }
+    }));
+    fetchCopyPreview(sMonth, sYear);
+  };
+
+  const handleExecuteCopy = async () => {
+    if (!copyModal.selectedSource) return;
+    try {
+      setCopyModal(prev => ({ ...prev, isCopying: true, error: '' }));
+      await api.post('/budgets/copy', {
+        sourceMonth: copyModal.selectedSource.month,
+        sourceYear: copyModal.selectedSource.year,
+        targetMonth: month,
+        targetYear: year,
+        mode: categories.length > 0 ? copyModal.mode : 'replace'
+      });
+
+      const sourceMonthName = new Date(0, copyModal.selectedSource.month - 1).toLocaleString('default', { month: 'long' });
+      const targetMonthName = new Date(0, month - 1).toLocaleString('default', { month: 'long' });
+
+      showSuccess(`Budget successfully copied from ${sourceMonthName} ${copyModal.selectedSource.year} to ${targetMonthName} ${year}!`);
+      setCopyModal(prev => ({ ...prev, isOpen: false, isCopying: false }));
+      
+      await fetchBudgetAndCategories();
+    } catch (err) {
+      console.error('Error executing copy budget:', err);
+      const msg = err.response?.data?.message || 'Failed to copy budget. Please try again.';
+      setCopyModal(prev => ({ ...prev, isCopying: false, error: msg }));
+    }
   };
 
   const handleUpdateBudget = async (e) => {
@@ -367,31 +514,55 @@ const BudgetPlanning = () => {
           <h2 className="text-2xl font-bold text-gray-800 dark:text-slate-100">Budget Planning</h2>
           <p className="text-sm text-gray-500 dark:text-slate-400">Allocate budgets to categories & monitor utilization</p>
         </div>
-        <div className="flex space-x-3 sm:space-x-4">
-          <select 
-            value={month} 
-            onChange={(e) => setMonth(Number(e.target.value))} 
-            className="flex-1 sm:flex-initial px-4 py-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-800 dark:text-slate-100 font-medium text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+        <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
+          <button
+            type="button"
+            onClick={handleOpenCopyModal}
+            className="inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-200 hover:border-brand-500 hover:text-brand-600 dark:hover:text-brand-400 font-medium text-xs sm:text-sm transition-all shadow-sm hover:shadow active:scale-[0.98] cursor-pointer"
+            title="Copy structure & budget allocations from another month"
           >
-            {Array.from({ length: 12 }, (_, i) => i + 1).map(m => (
-              <option key={m} value={m}>{new Date(0, m - 1).toLocaleString('default', { month: 'long' })}</option>
-            ))}
-          </select>
-          <select 
-            value={year} 
-            onChange={(e) => setYear(Number(e.target.value))} 
-            className="flex-1 sm:flex-initial px-4 py-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-800 dark:text-slate-100 font-medium text-sm focus:ring-2 focus:ring-brand-500 outline-none"
-          >
-            {[2024, 2025, 2026, 2027].map(y => (
-              <option key={y} value={y}>{y}</option>
-            ))}
-          </select>
+            <Copy className="h-4 w-4 text-brand-500" />
+            <span>Copy Budget</span>
+          </button>
+          <div className="flex space-x-2">
+            <select 
+              value={month} 
+              onChange={(e) => setMonth(Number(e.target.value))} 
+              className="px-3.5 py-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-800 dark:text-slate-100 font-medium text-xs sm:text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+            >
+              {Array.from({ length: 12 }, (_, i) => i + 1).map(m => (
+                <option key={m} value={m}>{new Date(0, m - 1).toLocaleString('default', { month: 'long' })}</option>
+              ))}
+            </select>
+            <select 
+              value={year} 
+              onChange={(e) => setYear(Number(e.target.value))} 
+              className="px-3.5 py-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-800 dark:text-slate-100 font-medium text-xs sm:text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+            >
+              {[2024, 2025, 2026, 2027].map(y => (
+                <option key={y} value={y}>{y}</option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
 
       {!budget ? (
         <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800">
-          <h3 className="text-xl font-bold text-gray-800 dark:text-slate-100 mb-4">Create Budget for this Month</h3>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+            <div>
+              <h3 className="text-xl font-bold text-gray-800 dark:text-slate-100">Create Budget for this Month</h3>
+              <p className="text-xs text-gray-500 dark:text-slate-400 mt-0.5">Start fresh or quickly import an existing month's setup</p>
+            </div>
+            <button
+              type="button"
+              onClick={handleOpenCopyModal}
+              className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border border-dashed border-brand-300 dark:border-brand-700/60 bg-brand-50/50 dark:bg-brand-950/20 text-brand-700 dark:text-brand-300 hover:bg-brand-50 dark:hover:bg-brand-950/40 text-xs font-semibold transition-all cursor-pointer self-start sm:self-auto"
+            >
+              <Copy className="h-3.5 w-3.5 text-brand-600 dark:text-brand-400" />
+              <span>Copy previous month</span>
+            </button>
+          </div>
           <form onSubmit={createBudget} className="flex flex-col sm:flex-row sm:items-end gap-3 sm:gap-4">
             <div className="flex-1 w-full">
               <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Total Budget Amount (₹)</label>
@@ -523,12 +694,23 @@ const BudgetPlanning = () => {
 
           {/* Subcategory Interactive Transactions Panel (When a subcategory is clicked in chart or card) */}
           {selectedSubcategory && (
-            <div className="bg-gradient-to-br from-indigo-50/70 via-white to-indigo-50/30 dark:from-indigo-950/40 dark:via-slate-900 dark:to-indigo-950/20 p-6 rounded-2xl shadow-md border-2 border-indigo-300 dark:border-indigo-800 space-y-4 animate-fadeIn transition-all">
+            <div
+              ref={transactionsSectionRef}
+              id={`transaction-history-${selectedSubcategory._id}`}
+              tabIndex={-1}
+              className={`p-6 rounded-2xl shadow-md border-2 space-y-4 animate-fadeIn transition-all duration-500 ease-out scroll-mt-4 sm:scroll-mt-6 outline-none ${
+                isHighlighted
+                  ? 'border-indigo-500 dark:border-indigo-400 ring-4 ring-indigo-400/30 dark:ring-indigo-500/30 shadow-lg shadow-indigo-500/10 bg-gradient-to-br from-indigo-100/90 via-white to-indigo-50 dark:from-indigo-900/60 dark:via-slate-900 dark:to-indigo-950/40'
+                  : 'border-indigo-300 dark:border-indigo-800 bg-gradient-to-br from-indigo-50/70 via-white to-indigo-50/30 dark:from-indigo-950/40 dark:via-slate-900 dark:to-indigo-950/20'
+              }`}
+            >
               {/* Header */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-indigo-100 dark:border-indigo-900/60">
                 <div>
                   <div className="flex items-center space-x-2">
-                    <span className="text-xs bg-indigo-600 text-white font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                    <span className={`text-xs text-white font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider transition-colors ${
+                      isHighlighted ? 'bg-indigo-700 dark:bg-indigo-500' : 'bg-indigo-600'
+                    }`}>
                       Filtered Subcategory
                     </span>
                     <h3 className="text-xl font-bold text-gray-900 dark:text-slate-100">{selectedSubcategory.name}</h3>
@@ -591,61 +773,63 @@ const BudgetPlanning = () => {
                     <span className="text-sm font-medium">Loading transactions...</span>
                   </div>
                 ) : subcategoryTransactions.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {subcategoryTransactions.map(tx => (
-                      <div
-                        key={tx._id}
-                        className="p-4 bg-white dark:bg-slate-800 rounded-2xl border border-indigo-100/90 dark:border-slate-700/80 shadow-xs flex flex-col justify-between hover:shadow-md hover:border-indigo-300 dark:hover:border-indigo-600 transition-all"
-                      >
-                        <div>
-                          <div className="flex justify-between items-start">
-                            <span className="font-semibold text-gray-900 dark:text-slate-100 text-sm truncate max-w-[150px]" title={tx.description || 'General'}>
-                              {tx.description || 'General'}
-                            </span>
-                            <span className="text-sm font-bold text-red-600 dark:text-red-400 pl-2 whitespace-nowrap">
-                              - ₹{tx.amount.toLocaleString('en-IN')}
-                            </span>
-                          </div>
-
-                          <div className="flex flex-wrap items-center gap-1.5 text-[10px] text-gray-500 dark:text-slate-400 mt-2.5">
-                            <span className="bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-400 px-2 py-0.5 rounded font-bold uppercase tracking-wider">
-                              {selectedSubcategory.categoryName || tx.categoryName || 'Category'}
-                            </span>
-                            <span className="bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 px-2 py-0.5 rounded font-bold uppercase tracking-wider">
-                              {selectedSubcategory.name || tx.subcategoryName}
-                            </span>
-                            {tx.paymentMethod && (
-                              <span className="bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-slate-300 px-2 py-0.5 rounded font-medium">
-                                {tx.paymentMethod}
+                  <div className="mobile-tx-scroll-container">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {subcategoryTransactions.map(tx => (
+                        <div
+                          key={tx._id}
+                          className="p-4 bg-white dark:bg-slate-800 rounded-2xl border border-indigo-100/90 dark:border-slate-700/80 shadow-xs flex flex-col justify-between hover:shadow-md hover:border-indigo-300 dark:hover:border-indigo-600 transition-all"
+                        >
+                          <div>
+                            <div className="flex justify-between items-start">
+                              <span className="font-semibold text-gray-900 dark:text-slate-100 text-sm truncate max-w-[150px]" title={tx.description || 'General'}>
+                                {tx.description || 'General'}
                               </span>
-                            )}
-                          </div>
-                        </div>
+                              <span className="text-sm font-bold text-red-600 dark:text-red-400 pl-2 whitespace-nowrap">
+                                - ₹{tx.amount.toLocaleString('en-IN')}
+                              </span>
+                            </div>
 
-                        <div className="text-[10px] text-gray-400 dark:text-slate-400 mt-4 pt-3 border-t border-gray-100 dark:border-slate-700/60 flex justify-between items-center font-medium">
-                          <div className="flex items-center space-x-1.5 text-gray-400 dark:text-slate-400">
-                            <Calendar className="h-3 w-3" />
-                            <span>{new Date(tx.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+                            <div className="flex flex-wrap items-center gap-1.5 text-[10px] text-gray-500 dark:text-slate-400 mt-2.5">
+                              <span className="bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-400 px-2 py-0.5 rounded font-bold uppercase tracking-wider">
+                                {selectedSubcategory.categoryName || tx.categoryName || 'Category'}
+                              </span>
+                              <span className="bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 px-2 py-0.5 rounded font-bold uppercase tracking-wider">
+                                {selectedSubcategory.name || tx.subcategoryName}
+                              </span>
+                              {tx.paymentMethod && (
+                                <span className="bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-slate-300 px-2 py-0.5 rounded font-medium">
+                                  {tx.paymentMethod}
+                                </span>
+                              )}
+                            </div>
                           </div>
-                          <div className="flex items-center space-x-1">
-                            <button
-                              onClick={() => handleOpenEditTx(tx)}
-                              className="text-gray-400 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 p-1.5 rounded-lg border border-gray-100 dark:border-slate-700 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 hover:border-indigo-200 transition-colors cursor-pointer"
-                              title="Edit Transaction"
-                            >
-                              <Pencil className="h-3.5 w-3.5" />
-                            </button>
-                            <button
-                              onClick={() => handleDeleteTx(tx._id)}
-                              className="text-gray-400 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 p-1.5 rounded-lg border border-gray-100 dark:border-slate-700 hover:bg-red-50 dark:hover:bg-red-950/50 hover:border-red-200 transition-colors cursor-pointer"
-                              title="Delete Transaction"
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </button>
+
+                          <div className="text-[10px] text-gray-400 dark:text-slate-400 mt-4 pt-3 border-t border-gray-100 dark:border-slate-700/60 flex justify-between items-center font-medium">
+                            <div className="flex items-center space-x-1.5 text-gray-400 dark:text-slate-400">
+                              <Calendar className="h-3 w-3" />
+                              <span>{new Date(tx.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+                            </div>
+                            <div className="flex items-center space-x-1">
+                              <button
+                                onClick={() => handleOpenEditTx(tx)}
+                                className="text-gray-400 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 p-1.5 rounded-lg border border-gray-100 dark:border-slate-700 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 hover:border-indigo-200 transition-colors cursor-pointer"
+                                title="Edit Transaction"
+                              >
+                                <Pencil className="h-3.5 w-3.5" />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteTx(tx._id)}
+                                className="text-gray-400 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 p-1.5 rounded-lg border border-gray-100 dark:border-slate-700 hover:bg-red-50 dark:hover:bg-red-950/50 hover:border-red-200 transition-colors cursor-pointer"
+                                title="Delete Transaction"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
                 ) : (
                   <div className="p-8 bg-white/80 dark:bg-slate-800/60 rounded-2xl border border-dashed border-indigo-200 dark:border-indigo-900/60 text-center text-gray-400 dark:text-slate-400">
@@ -751,7 +935,7 @@ const BudgetPlanning = () => {
                           return (
                             <div
                               key={sub._id}
-                              onClick={() => !isEditing && handleSelectSubcategory(sub, cat)}
+                              onClick={() => !isEditing && handleSelectSubcategory(sub, cat, true)}
                               className={`p-4 bg-gray-50 dark:bg-slate-800/60 rounded-xl border border-gray-100 dark:border-slate-700/60 flex items-center justify-between group hover:shadow-md min-h-[110px] relative transition-all duration-200 cursor-pointer ${hoverBorderClass}`}
                             >
                               {isEditing ? (
@@ -922,7 +1106,7 @@ const BudgetPlanning = () => {
                                       type="button"
                                       onClick={(e) => {
                                         e.stopPropagation();
-                                        handleSelectSubcategory(sub, cat);
+                                        handleSelectSubcategory(sub, cat, true);
                                       }}
                                       className={`text-[11px] font-bold px-2.5 py-1 rounded-lg flex items-center space-x-1.5 transition-all shadow-xs cursor-pointer ${
                                         isSelected
@@ -980,7 +1164,7 @@ const BudgetPlanning = () => {
                                 className="cursor-pointer"
                                 onClick={(entry) => {
                                   if (entry && entry.subObject) {
-                                    handleSelectSubcategory(entry.subObject, cat);
+                                    handleSelectSubcategory(entry.subObject, cat, true);
                                   }
                                 }}
                               >
@@ -1068,7 +1252,7 @@ const BudgetPlanning = () => {
                                 <button
                                   key={sub._id}
                                   type="button"
-                                  onClick={() => handleSelectSubcategory(sub, cat)}
+                                  onClick={() => handleSelectSubcategory(sub, cat, true)}
                                   className={`flex items-center space-x-2 text-xs p-2 rounded-xl border text-left transition-all cursor-pointer ${
                                     isSelected
                                       ? 'bg-indigo-50 dark:bg-indigo-950/40 border-indigo-300 dark:border-indigo-700 ring-2 ring-indigo-200 dark:ring-indigo-900/50'
@@ -1288,6 +1472,226 @@ const BudgetPlanning = () => {
                 Delete
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Copy Budget from Another Month Modal */}
+      {copyModal.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 dark:bg-black/80 backdrop-blur-sm overflow-y-auto animate-fadeIn">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 sm:p-6 max-w-lg w-full shadow-2xl border border-gray-100 dark:border-slate-800 my-8">
+            <div className="flex items-center justify-between pb-4 border-b border-gray-100 dark:border-slate-800">
+              <div className="flex items-center space-x-3">
+                <div className="p-2.5 bg-brand-50 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400 rounded-2xl">
+                  <Copy className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-slate-100">
+                    Copy Budget
+                  </h3>
+                  <p className="text-xs text-gray-500 dark:text-slate-400">
+                    Target: <span className="font-semibold text-brand-600 dark:text-brand-400">{new Date(0, month - 1).toLocaleString('default', { month: 'long' })} {year}</span>
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setCopyModal(prev => ({ ...prev, isOpen: false }))}
+                className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-slate-200 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 cursor-pointer transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {copyModal.error && (
+              <div className="mt-4 p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/50 rounded-xl text-xs text-red-600 dark:text-red-400 flex items-center space-x-2">
+                <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                <span>{copyModal.error}</span>
+              </div>
+            )}
+
+            {copyModal.loadingList ? (
+              <div className="py-12 flex flex-col items-center justify-center space-y-3">
+                <Loader2 className="h-7 w-7 text-brand-500 animate-spin" />
+                <p className="text-xs font-medium text-gray-500 dark:text-slate-400">Loading existing budgets...</p>
+              </div>
+            ) : copyModal.availableBudgets.length === 0 ? (
+              <div className="py-8 text-center space-y-3">
+                <div className="p-3 bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 rounded-2xl w-fit mx-auto">
+                  <AlertCircle className="h-6 w-6" />
+                </div>
+                <h4 className="text-sm font-bold text-gray-800 dark:text-slate-200">No other budgets found</h4>
+                <p className="text-xs text-gray-500 dark:text-slate-400 max-w-xs mx-auto">
+                  There are no budgets from other months available to copy. Set up a budget first, and you can copy it to future months!
+                </p>
+                <div className="pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setCopyModal(prev => ({ ...prev, isOpen: false }))}
+                    className="px-4 py-2 bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300 rounded-xl text-xs font-semibold hover:bg-gray-200 dark:hover:bg-slate-700 cursor-pointer"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="mt-4 space-y-4">
+                {/* Source Selection */}
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+                    Select Source Month
+                  </label>
+                  <select
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-brand-500 cursor-pointer"
+                    value={copyModal.selectedSource ? `${copyModal.selectedSource.month}-${copyModal.selectedSource.year}` : ''}
+                    onChange={handleSelectSource}
+                  >
+                    {copyModal.availableBudgets.map(b => (
+                      <option key={`${b.month}-${b.year}`} value={`${b.month}-${b.year}`}>
+                        {new Date(0, b.month - 1).toLocaleString('default', { month: 'long' })} {b.year} — ₹{Number(b.totalBudget || 0).toLocaleString('en-IN')} ({b.categoryCount || 0} categories)
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Preview Card */}
+                {copyModal.loadingPreview ? (
+                  <div className="py-8 flex flex-col items-center justify-center space-y-2 bg-gray-50 dark:bg-slate-800/40 rounded-2xl border border-gray-100 dark:border-slate-800">
+                    <Loader2 className="h-5 w-5 text-brand-500 animate-spin" />
+                    <span className="text-xs text-gray-500 dark:text-slate-400">Loading budget structure...</span>
+                  </div>
+                ) : copyModal.previewData && (
+                  <div className="space-y-3">
+                    <div className="bg-gray-50 dark:bg-slate-800/50 rounded-2xl p-3.5 border border-gray-100 dark:border-slate-800">
+                      <div className="flex items-center justify-between text-xs pb-2 border-b border-gray-200/60 dark:border-slate-700/60">
+                        <span className="font-semibold text-gray-600 dark:text-slate-300">
+                          {copyModal.previewData.categories.length} Categories · {copyModal.previewData.categories.reduce((sum, c) => sum + (c.subcategories?.length || 0), 0)} Subcategories
+                        </span>
+                        <span className="font-bold text-brand-600 dark:text-brand-400">
+                          ₹{Number(copyModal.previewData.budget?.totalBudget || 0).toLocaleString('en-IN')} Total
+                        </span>
+                      </div>
+
+                      {/* Hierarchy list */}
+                      <div className="mt-2.5 max-h-44 overflow-y-auto space-y-2 pr-1 text-xs">
+                        {copyModal.previewData.categories.map(c => {
+                          const catTotal = (c.subcategories || []).reduce((sum, s) => sum + (Number(s.allocatedBudget) || 0), 0);
+                          return (
+                            <div key={c._id || c.name} className="bg-white dark:bg-slate-800 rounded-xl p-2.5 border border-gray-100 dark:border-slate-700/60 shadow-2xs">
+                              <div className="flex items-center justify-between font-bold text-gray-800 dark:text-slate-100 mb-1">
+                                <span className="flex items-center space-x-1.5">
+                                  <Layers className="h-3.5 w-3.5 text-brand-500" />
+                                  <span>{c.name}</span>
+                                </span>
+                                <span className="text-gray-500 dark:text-slate-400 font-medium">₹{catTotal.toLocaleString('en-IN')}</span>
+                              </div>
+                              {c.subcategories && c.subcategories.length > 0 ? (
+                                <div className="space-y-1 pl-4 border-l-2 border-brand-100 dark:border-brand-900/50 ml-1.5 mt-1">
+                                  {c.subcategories.map(s => (
+                                    <div key={s._id || s.name} className="flex items-center justify-between text-[11px] text-gray-600 dark:text-slate-300">
+                                      <span>• {s.name}</span>
+                                      <span className="font-semibold text-gray-700 dark:text-slate-200">₹{Number(s.allocatedBudget || 0).toLocaleString('en-IN')}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : (
+                                <p className="text-[10px] text-gray-400 italic pl-4">No subcategories</p>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    <div className="text-[11px] text-gray-500 dark:text-slate-400 bg-blue-50/70 dark:bg-blue-950/30 p-2.5 rounded-xl border border-blue-100 dark:border-blue-900/40">
+                      💡 <strong>Note:</strong> Transactions and spending will not be copied. Copied subcategories in {new Date(0, month - 1).toLocaleString('default', { month: 'long' })} will start with <strong>₹0 spent</strong>.
+                    </div>
+                  </div>
+                )}
+
+                {/* Conflict Resolution Mode if destination already has categories */}
+                {categories.length > 0 && (
+                  <div className="pt-2 border-t border-gray-100 dark:border-slate-800">
+                    <p className="text-xs font-bold text-amber-600 dark:text-amber-400 mb-2">
+                      ⚠️ Current month already has {categories.length} {categories.length === 1 ? 'category' : 'categories'}:
+                    </p>
+                    <div className="space-y-2 text-xs">
+                      <label className={`flex items-start space-x-2.5 p-2.5 rounded-xl border cursor-pointer transition-all ${
+                        copyModal.mode === 'replace'
+                          ? 'border-brand-500 bg-brand-50/50 dark:bg-brand-950/20 text-gray-900 dark:text-slate-100'
+                          : 'border-gray-200 dark:border-slate-800 text-gray-600 dark:text-slate-400'
+                      }`}>
+                        <input
+                          type="radio"
+                          name="copyMode"
+                          value="replace"
+                          checked={copyModal.mode === 'replace'}
+                          onChange={() => setCopyModal(prev => ({ ...prev, mode: 'replace' }))}
+                          className="mt-0.5 text-brand-600 focus:ring-brand-500"
+                        />
+                        <div>
+                          <div className="font-bold">Replace Existing Budget</div>
+                          <div className="text-[11px] text-gray-500 dark:text-slate-400">
+                            Clears current month's categories & allocations, replacing them completely with the source setup.
+                          </div>
+                        </div>
+                      </label>
+
+                      <label className={`flex items-start space-x-2.5 p-2.5 rounded-xl border cursor-pointer transition-all ${
+                        copyModal.mode === 'merge'
+                          ? 'border-brand-500 bg-brand-50/50 dark:bg-brand-950/20 text-gray-900 dark:text-slate-100'
+                          : 'border-gray-200 dark:border-slate-800 text-gray-600 dark:text-slate-400'
+                      }`}>
+                        <input
+                          type="radio"
+                          name="copyMode"
+                          value="merge"
+                          checked={copyModal.mode === 'merge'}
+                          onChange={() => setCopyModal(prev => ({ ...prev, mode: 'merge' }))}
+                          className="mt-0.5 text-brand-600 focus:ring-brand-500"
+                        />
+                        <div>
+                          <div className="font-bold">Add Missing Items (Merge)</div>
+                          <div className="text-[11px] text-gray-500 dark:text-slate-400">
+                            Preserves existing categories & subcategories; only adds missing categories/subcategories from the source month.
+                          </div>
+                        </div>
+                      </label>
+                    </div>
+                  </div>
+                )}
+
+                {/* Footer Buttons */}
+                <div className="grid grid-cols-2 gap-3 pt-3 border-t border-gray-100 dark:border-slate-800">
+                  <button
+                    type="button"
+                    onClick={() => setCopyModal(prev => ({ ...prev, isOpen: false }))}
+                    disabled={copyModal.isCopying}
+                    className="w-full py-2.5 bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300 rounded-xl hover:bg-gray-200 dark:hover:bg-slate-700 text-xs sm:text-sm font-semibold transition-all cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleExecuteCopy}
+                    disabled={copyModal.isCopying || copyModal.loadingPreview || !copyModal.previewData}
+                    className="w-full py-2.5 bg-brand-500 text-white rounded-xl hover:bg-brand-600 text-xs sm:text-sm font-semibold transition-all shadow-md shadow-brand-500/20 flex items-center justify-center space-x-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {copyModal.isCopying ? (
+                      <>
+                        <Loader2 className="animate-spin h-4 w-4" />
+                        <span>Copying...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="h-4 w-4" />
+                        <span>Confirm Copy</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

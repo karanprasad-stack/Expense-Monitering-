@@ -1,5 +1,6 @@
 const Expense = require('../models/Expense');
 const Subcategory = require('../models/Subcategory');
+const Category = require('../models/Category');
 
 // In-memory idempotency cache for deduplication (TTL 5 minutes)
 const idempotencyCache = new Map();
@@ -255,10 +256,205 @@ const deleteExpense = async (req, res) => {
   }
 };
 
+// Helper to escape regex special characters
+const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+// @desc    Analyze spending across historical months by subcategory/category/description
+// @route   GET /api/expenses/analysis
+// @access  Private
+const getSpendingAnalysis = async (req, res) => {
+  try {
+    const { q, range, startDate, endDate } = req.query;
+    const userId = req.user._id;
+
+    // 1. Determine Date Range Filter
+    let dateFilter = null;
+    const now = new Date();
+
+    if (range === 'last-3-months') {
+      const start = new Date(now.getFullYear(), now.getMonth() - 2, 1);
+      dateFilter = { $gte: start };
+    } else if (range === 'last-6-months') {
+      const start = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+      dateFilter = { $gte: start };
+    } else if (range === 'last-12-months') {
+      const start = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+      dateFilter = { $gte: start };
+    } else if (range === 'this-year') {
+      const start = new Date(now.getFullYear(), 0, 1);
+      const end = new Date(now.getFullYear(), 11, 31, 23, 59, 59, 999);
+      dateFilter = { $gte: start, $lte: end };
+    } else if (range === 'last-year') {
+      const start = new Date(now.getFullYear() - 1, 0, 1);
+      const end = new Date(now.getFullYear() - 1, 11, 31, 23, 59, 59, 999);
+      dateFilter = { $gte: start, $lte: end };
+    } else if (range === 'custom' && (startDate || endDate)) {
+      dateFilter = {};
+      if (startDate) dateFilter.$gte = new Date(startDate);
+      if (endDate) {
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+        dateFilter.$lte = end;
+      }
+    }
+
+    // 2. Suggestions if query `q` is not provided or empty
+    const trimmedQ = (q || '').trim();
+
+    if (!trimmedQ) {
+      const userSubcategories = await Subcategory.find({ userId }).select('name').limit(20).lean();
+      const distinctSubcatNames = [...new Set(userSubcategories.map(s => s.name.trim()).filter(Boolean))];
+
+      const recentExpenses = await Expense.find({ userId })
+        .sort({ date: -1 })
+        .limit(40)
+        .select('description')
+        .lean();
+      const distinctDescriptions = [...new Set(
+        recentExpenses
+          .map(e => e.description?.trim())
+          .filter(d => d && d.toLowerCase() !== 'general')
+      )];
+
+      const suggestions = [...new Set([...distinctSubcatNames, ...distinctDescriptions])].slice(0, 12);
+
+      return res.json({
+        query: '',
+        range: range || 'last-6-months',
+        suggestions,
+        overallTotal: 0,
+        overallCount: 0,
+        monthsTracked: 0,
+        averageMonthlySpent: 0,
+        months: []
+      });
+    }
+
+    // 3. Search Matching Categories and Subcategories
+    const escaped = escapeRegex(trimmedQ);
+    const searchRegex = new RegExp(escaped, 'i');
+
+    const [matchingCategories, matchingSubcategories] = await Promise.all([
+      Category.find({ userId, name: searchRegex }).select('_id name').lean(),
+      Subcategory.find({ userId, name: searchRegex }).select('_id name categoryId').lean()
+    ]);
+
+    const matchingCatIds = matchingCategories.map(c => c._id);
+    const matchingSubcatIds = matchingSubcategories.map(s => s._id);
+
+    // Build matching $or conditions
+    const orConditions = [
+      { description: searchRegex }
+    ];
+    if (matchingSubcatIds.length > 0) {
+      orConditions.push({ subcategoryId: { $in: matchingSubcatIds } });
+    }
+    if (matchingCatIds.length > 0) {
+      orConditions.push({ categoryId: { $in: matchingCatIds } });
+    }
+
+    const expenseFilter = {
+      userId,
+      $or: orConditions
+    };
+
+    if (dateFilter) {
+      expenseFilter.date = dateFilter;
+    }
+
+    // 4. Fetch matching expenses
+    const expenses = await Expense.find(expenseFilter)
+      .populate('categoryId', 'name')
+      .populate('subcategoryId', 'name')
+      .sort({ date: -1, createdAt: -1 })
+      .lean();
+
+    // 5. Annotate each expense with match origin & priority
+    const lowerQ = trimmedQ.toLowerCase();
+    const annotatedExpenses = expenses.map(exp => {
+      const subName = exp.subcategoryId?.name || '';
+      const catName = exp.categoryId?.name || '';
+      const desc = exp.description || '';
+
+      const isSubMatch = subName.toLowerCase().includes(lowerQ);
+      const isDescMatch = desc.toLowerCase().includes(lowerQ);
+      const isCatMatch = catName.toLowerCase().includes(lowerQ);
+
+      let matchType = 'description';
+      if (isSubMatch) matchType = 'subcategory';
+      else if (isCatMatch) matchType = 'category';
+
+      return {
+        ...exp,
+        matchType,
+        subName,
+        catName
+      };
+    });
+
+    // 6. Group by Month (Chronological Newest -> Oldest)
+    const monthGroupsMap = new Map();
+
+    for (const exp of annotatedExpenses) {
+      const d = new Date(exp.date);
+      const year = d.getFullYear();
+      const month = d.getMonth() + 1;
+      const monthKey = `${year}-${String(month).padStart(2, '0')}`;
+
+      if (!monthGroupsMap.has(monthKey)) {
+        const monthLabel = d.toLocaleString('default', { month: 'long', year: 'numeric' });
+        monthGroupsMap.set(monthKey, {
+          monthKey,
+          year,
+          month,
+          monthLabel,
+          total: 0,
+          count: 0,
+          transactions: []
+        });
+      }
+
+      const group = monthGroupsMap.get(monthKey);
+      group.total += exp.amount || 0;
+      group.count += 1;
+      group.transactions.push(exp);
+    }
+
+    // Sort month groups descending by monthKey (e.g. 2026-09 before 2026-08)
+    const months = Array.from(monthGroupsMap.values()).sort((a, b) => b.monthKey.localeCompare(a.monthKey));
+
+    // Sort transactions within each month descending by date
+    for (const m of months) {
+      m.transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+    }
+
+    // 7. Calculate overall aggregates
+    const overallTotal = annotatedExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);
+    const overallCount = annotatedExpenses.length;
+    const monthsTracked = months.length;
+    const averageMonthlySpent = monthsTracked > 0 ? Math.round(overallTotal / monthsTracked) : 0;
+
+    res.json({
+      query: trimmedQ,
+      range: range || 'last-6-months',
+      overallTotal,
+      overallCount,
+      monthsTracked,
+      averageMonthlySpent,
+      months
+    });
+  } catch (error) {
+    console.error('Get spending analysis error:', error);
+    res.status(500).json({ message: 'Internal server error while analyzing spending' });
+  }
+};
+
 module.exports = {
   getExpenses,
   createExpense,
   updateExpense,
-  deleteExpense
+  deleteExpense,
+  getSpendingAnalysis
 };
+
 

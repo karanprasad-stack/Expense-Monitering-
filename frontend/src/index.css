@@ -593,3 +593,63 @@
     animation: none;
   }
 }
+
+/* ===== Mobile Bounded Transactions Container ===== */
+.mobile-tx-scroll-container {
+  max-height: clamp(340px, 55dvh, 520px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  padding-right: 2px;
+  padding-bottom: 4px;
+}
+
+/* Subtle, non-intrusive custom scrollbar for mobile */
+.mobile-tx-scroll-container::-webkit-scrollbar {
+  width: 5px;
+}
+
+.mobile-tx-scroll-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.mobile-tx-scroll-container::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 163, 175, 0.4);
+  border-radius: 9999px;
+}
+
+.mobile-tx-scroll-container::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(156, 163, 175, 0.65);
+}
+
+.dark .mobile-tx-scroll-container::-webkit-scrollbar-thumb {
+  background-color: rgba(148, 163, 184, 0.3);
+}
+
+.dark .mobile-tx-scroll-container::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(148, 163, 184, 0.55);
+}
+
+/* Firefox scrollbar */
+@supports (scrollbar-width: thin) {
+  .mobile-tx-scroll-container {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(156, 163, 175, 0.4) transparent;
+  }
+  .dark .mobile-tx-scroll-container {
+    scrollbar-color: rgba(148, 163, 184, 0.3) transparent;
+  }
+}
+
+/* On desktop (768px and up): completely unbounded, no scrollbar, normal grid */
+@media (min-width: 768px) {
+  .mobile-tx-scroll-container {
+    max-height: none !important;
+    overflow-y: visible !important;
+    overflow-x: visible !important;
+    padding-right: 0;
+    padding-bottom: 0;
+  }
+}
+

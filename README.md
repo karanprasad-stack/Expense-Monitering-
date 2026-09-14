@@ -1,6 +1,6 @@
-# 💸 FinTrack — Personal Expense Monitoring, Budget Planning & Udhar Ledger
+# 💸 FinTrack — Personal Expense Monitoring, Budget Planning, Spending Analysis & Udhar Ledger
 
-A modern, full-stack personal finance platform built with React 19, Node.js, Express, and MongoDB. **FinTrack** provides real-time monthly budget tracking, multi-tier expense categorization, interactive charts, automated overspending alerts, an end-to-end **Lending & Borrowing (Udhar)** ledger, and a polished **Dark & Light Mode** theme system.
+A modern, full-stack personal finance platform built with React 19, Node.js, Express, and MongoDB. **FinTrack** provides real-time monthly budget tracking, multi-tier expense categorization, interactive charts, automated overspending alerts, cross-period **Spending Analysis**, month-to-month budget cloning, an end-to-end **Lending & Borrowing (Udhar)** ledger, and a polished **Dark & Light Mode** theme system.
 
 ---
 
@@ -14,15 +14,32 @@ A modern, full-stack personal finance platform built with React 19, Node.js, Exp
   * **Subcategory Spending Breakdown**: Interactive donut chart detailing spending distribution.
 * **Recent Activity**: Quick snapshot of recent expenses with categorized badges and a dedicated **View All Transactions** modal.
 
-### 📅 2. Advanced Budget Planning
+### 📅 2. Advanced Budget Planning & Monthly Cloning
 * **Monthly Budgeting**: Define and update overall budget ceilings for any month and year.
 * **Two-Tier Category Hierarchy**:
   * Organize finances into **Parent Categories** (e.g., *Living Expenses*, *Entertainment*, *Investments*).
   * Break down parents into **Subcategories** (e.g., *Groceries*, *Electricity*, *Dining*) with dedicated spending limits.
+* **Copy Budget Across Months**: Effortlessly duplicate/import an existing month's budget structure and category limits into another month without manual re-entry.
 * **Interactive Subcategory Transactions Panel**: Click any subcategory card or chart slice to view, edit, or delete transactions recorded under that specific subcategory.
 * **Real-Time Utilization Badges**: Dynamic visual indicators (Normal, Warning at 70%, and Overspent alerts) with utilization percentages.
 
-### 🤝 3. Lending & Borrowing ("Udhar") Management
+### 🔍 3. Cross-Period Spending Analysis
+* **Historical Item & Category Comparison**: Search any specific item (e.g. *Cold Drink*, *Egg*, *Chicken*, *Petrol*) or category across multiple months and years.
+* **Flexible Date Range Filtering**: Filter spending insights across *Last 3 Months*, *Last 6 Months*, *This Year*, *Last Year*, *All Time*, or a *Custom Date Range*.
+* **Aggregate Key Metrics**: Instant computation of **Total Amount Spent**, **Total Transactions**, **Active Spending Months**, and **Monthly Average**.
+* **Monthly Spending Intensity**: Visual comparative progress bars showcasing spending spikes and variations month-over-month.
+* **Chronological Month-by-Month Breakdown**: Expandable monthly cards showing per-month totals, transaction counts, and detailed transaction tables with origin match badges (e.g., subcategory match vs. keyword match).
+
+### 💳 4. Comprehensive Transactions Management
+* **Record Expenses**: Add transactions with date, category, subcategory, payment method (*UPI, Credit Card, Debit Card, Cash, Net Banking*), amount, and notes.
+* **Date-Grouped Presentation**: Transactions are neatly organized by day (*Today*, *Yesterday*, or formatted calendar dates) with sticky section headers and transaction count badges.
+* **Mobile-Optimized Internal Scrolling**: Clean, bounded viewport scroll behavior preventing infinitely long mobile pages.
+* **High-Contrast Dark Navy Hierarchy**: Layered visual depth matching modern SaaS dashboard aesthetics (Page background -> Main cards -> Elevated date groups -> Inputs & controls) with subtle blue-gray borders.
+* **Double-Submit & Idempotency Guard**: Client and server-side idempotency keys (`X-Idempotency-Key`) eliminate duplicate transactions on rapid clicks.
+* **Search & Filter Controls**: Live filtering by search query, parent category, and subcategory.
+* **Edit & Safe Delete**: In-place editing and modal-based delete confirmations that automatically synchronize budget limits.
+
+### 🤝 5. Lending & Borrowing ("Udhar") Management
 * **Independent Debt Ledger**: Track money given to others (lent / repaid) and money received from others (borrowed / returned).
 * **Automated Net Balance & Status Tracking**:
   * `THEY_OWE_YOU` (Positive Net Balance — Green)
@@ -32,18 +49,12 @@ A modern, full-stack personal finance platform built with React 19, Node.js, Exp
 * **Per-Person Ledger History**: View full chronological transaction history for each person with edit, delete, and "Settle Up" actions.
 * **Live Search & Status Filtering**: Filter contacts instantly by name or status (`All`, `They Owe Me`, `I Owe Them`, `Settled`).
 
-### 💳 4. Comprehensive Transactions Management
-* **Record Expenses**: Add transactions with date, category, subcategory, payment method (*UPI, Credit Card, Debit Card, Cash, Net Banking*), amount, and notes.
-* **Double-Submit & Idempotency Guard**: Client and server-side idempotency keys (`X-Idempotency-Key`) eliminate duplicate transactions on rapid clicks.
-* **Search & Filter Controls**: Live filtering by search query, parent category, and subcategory.
-* **Edit & Safe Delete**: In-place editing and modal-based delete confirmations that automatically synchronize budget limits.
-
-### 🌓 5. Dark Mode & Light Mode
+### 🌓 6. Dark Mode & Light Mode
 * **Instant Theme Switching**: Animated Sun/Moon toggle button in the header.
 * **Theme Persistence**: Preserves user preference in `localStorage` with fallback to OS `prefers-color-scheme`.
-* **Eye-Pleasing Dark Aesthetics**: Tailored high-contrast dark theme with softened matte chart palettes (`#60a5fa`, `#34d399`, `#a78bfa`, `#f472b6`, `#38bdf8`, `#fbbf24`), dark calendar pickers, and glassmorphic cards without visual glare.
+* **Eye-Pleasing Dark Aesthetics**: Tailored high-contrast dark theme with softened matte chart palettes (`#60a5fa`, `#34d399`, `#a78bfa`, `#f472b6`, `#38bdf8`, `#fbbf24`), dark calendar pickers, and refined cards without glare.
 
-### 🔒 6. Security & Data Integrity
+### 🔒 7. Security & Data Integrity
 * **JWT Authentication**: Secure user registration and login with token validation interceptors.
 * **NoSQL Injection Defense**: Automated query sanitization via `mongoSanitize` middleware.
 * **Production Rate Limiting**: Multi-tier API rate limiting with strict auth protection against brute-force attacks.
@@ -75,9 +86,9 @@ Expense Monitoring/
 │   │   └── db.js                         # MongoDB connection logic
 │   ├── controllers/
 │   │   ├── authController.js             # User register, login & profile
-│   │   ├── budgetController.js           # Budget creation & retrieval
+│   │   ├── budgetController.js           # Budget creation, retrieval & month copy
 │   │   ├── categoryController.js         # Categories & subcategories CRUD
-│   │   ├── expenseController.js          # Expense tracking & idempotency
+│   │   ├── expenseController.js          # Expenses, spending analysis & idempotency
 │   │   ├── dashboardController.js        # Analytics & summary aggregation
 │   │   └── udharController.js            # People & Udhar transactions CRUD
 │   ├── middleware/
@@ -113,8 +124,9 @@ Expense Monitoring/
 │   │   │   └── ThemeContext.jsx          # Dark/Light mode theme state
 │   │   ├── pages/
 │   │   │   ├── Dashboard.jsx             # Financial summary & analytics
-│   │   │   ├── BudgetPlanning.jsx        # Category budgets & subcategory panel
-│   │   │   ├── Transactions.jsx          # Expense history & form
+│   │   │   ├── BudgetPlanning.jsx        # Category budgets, subcategories & copy budget
+│   │   │   ├── SpendingAnalysis.jsx      # Cross-month historical search & analysis
+│   │   │   ├── Transactions.jsx          # Expense history & form with date grouping
 │   │   │   ├── LendingBorrowing.jsx      # Udhar contacts & ledger
 │   │   │   ├── Login.jsx                 # User sign in
 │   │   │   └── Register.jsx              # User registration
@@ -209,6 +221,7 @@ Expense Monitoring/
 | :--- | :--- | :--- | :---: |
 | `GET` | `/api/budgets?month=M&year=YYYY` | Fetch budget for specific month and year | ✅ |
 | `POST` | `/api/budgets` | Set or update monthly budget ceiling | ✅ |
+| `POST` | `/api/budgets/copy` | Clone budget & category allocation structure from another month | ✅ |
 
 ### 🏷️ Categories & Subcategories (`/api/categories`)
 | Method | Endpoint | Description | Auth Required |
@@ -221,13 +234,14 @@ Expense Monitoring/
 | `PUT` | `/api/categories/subcategories/:subId` | Update subcategory name or allocation | ✅ |
 | `DELETE` | `/api/categories/subcategories/:subId` | Remove subcategory and associated expenses | ✅ |
 
-### 💳 Expense Transactions (`/api/expenses`)
+### 💳 Expense Transactions & Analysis (`/api/expenses`)
 | Method | Endpoint | Description | Auth Required |
 | :--- | :--- | :--- | :---: |
 | `GET` | `/api/expenses` | Get all expenses (supports `subcategoryId`, `month`, `year` filters) | ✅ |
 | `POST` | `/api/expenses` | Record a new expense (supports `X-Idempotency-Key`) | ✅ |
 | `PUT` | `/api/expenses/:id` | Update an existing expense | ✅ |
 | `DELETE` | `/api/expenses/:id` | Delete an expense and restore budget | ✅ |
+| `GET` | `/api/expenses/spending-analysis` | Cross-month/year historical spending analysis & keyword search | ✅ |
 
 ### 🤝 Lending & Borrowing / Udhar (`/api/udhar`)
 | Method | Endpoint | Description | Auth Required |
@@ -246,12 +260,13 @@ Expense Monitoring/
 
 ## 🧪 Testing & Validation
 
-The project includes an end-to-end integration test suite verifying:
+The project includes integration testing verifying:
 1. Contact lifecycle & ledger transactions
 2. Automated balance calculation & status transitions (`THEY_OWE_YOU`, `YOU_OWE_THEM`, `SETTLED`)
 3. Double-submission idempotency protection
 4. Search & status filtering accuracy
 5. Overview statistic mathematical totals
+6. Month-by-month budget copying logic and historical spending analytics
 
 To run tests:
 ```bash
